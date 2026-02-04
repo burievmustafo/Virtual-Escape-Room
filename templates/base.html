@@ -1,11 +1,29 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="uz" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token }}">
     <title>{% block title %}Jumboq O'yini{% endblock %}</title>
     <style>
+        :root {
+            --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-secondary: rgba(255, 255, 255, 0.95);
+            --text-primary: #333;
+            --text-secondary: #666;
+            --card-bg: white;
+            --border-color: #e0e0e0;
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            --bg-secondary: rgba(30, 30, 50, 0.95);
+            --text-primary: #f0f0f0;
+            --text-secondary: #aaa;
+            --card-bg: #2a2a4a;
+            --border-color: #444;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -14,9 +32,10 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--bg-primary);
             min-height: 100vh;
-            color: #333;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
         }
         
         .container {
@@ -26,7 +45,7 @@
         }
         
         .navbar {
-            background: rgba(255, 255, 255, 0.95);
+            background: var(--bg-secondary);
             padding: 15px 30px;
             border-radius: 10px;
             margin-bottom: 30px;
@@ -41,22 +60,26 @@
             font-size: 24px;
         }
         
+        [data-theme="dark"] .navbar h1 {
+            color: #a0b4ff;
+        }
+        
         .navbar-links {
             display: flex;
             gap: 20px;
             align-items: center;
         }
         
-        .navbar-links a {
+        .navbar-links > a {
             text-decoration: none;
-            color: #333;
+            color: var(--text-primary);
             font-weight: 500;
             padding: 8px 16px;
             border-radius: 5px;
             transition: all 0.3s;
         }
         
-        .navbar-links a:hover {
+        .navbar-links > a:hover {
             background: #667eea;
             color: white;
         }
@@ -75,8 +98,234 @@
             font-weight: bold;
         }
         
-        .card {
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: relative;
+        }
+        
+        .profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .profile-btn:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .profile-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .profile-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .dropdown-arrow {
+            transition: transform 0.3s;
+        }
+        
+        .profile-dropdown.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            min-width: 250px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+            z-index: 1000;
+            overflow: hidden;
+        }
+        
+        .profile-dropdown.active .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .dropdown-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+        
+        .dropdown-header .avatar-large {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            margin: 0 auto 10px;
+        }
+        
+        .dropdown-header .user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 16px;
+        }
+        
+        .dropdown-header .user-email {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+        
+        .dropdown-section {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .dropdown-section:last-child {
+            border-bottom: none;
+        }
+        
+        .dropdown-section-title {
+            padding: 8px 20px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            font-size: 14px;
+        }
+        
+        .dropdown-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .dropdown-item .icon {
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Theme Toggle */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+        }
+        
+        .theme-toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: #ccc;
+            border-radius: 13px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .toggle-switch.active {
+            background: #667eea;
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
             background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+        
+        .toggle-switch.active::after {
+            transform: translateX(24px);
+        }
+        
+        /* Language Selector */
+        .language-options {
+            display: flex;
+            gap: 5px;
+            padding: 5px 20px 10px;
+        }
+        
+        .lang-btn {
+            padding: 8px 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--card-bg);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 12px;
+            color: var(--text-primary);
+        }
+        
+        .lang-btn:hover, .lang-btn.active {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .lang-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        /* Logout Button */
+        .logout-btn {
+            color: #dc3545 !important;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(220, 53, 69, 0.1) !important;
+        }
+        
+        .card {
+            background: var(--card-bg);
             border-radius: 15px;
             padding: 30px;
             margin-bottom: 20px;
@@ -126,16 +375,18 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #333;
+            color: var(--text-primary);
         }
         
         .form-group input {
             width: 100%;
             padding: 12px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid var(--border-color);
             border-radius: 8px;
             font-size: 16px;
             transition: border-color 0.3s;
+            background: var(--card-bg);
+            color: var(--text-primary);
         }
         
         .form-group input:focus {
@@ -173,7 +424,7 @@
         }
         
         .room-card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 15px;
             padding: 25px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -205,10 +456,14 @@
             margin-bottom: 10px;
         }
         
+        [data-theme="dark"] .room-card h3 {
+            color: #a0b4ff;
+        }
+        
         .progress-bar {
             width: 100%;
             height: 8px;
-            background: #e0e0e0;
+            background: var(--border-color);
             border-radius: 4px;
             overflow: hidden;
             margin: 15px 0;
@@ -253,19 +508,65 @@
             <h1>🧩 Jumboq O'yini</h1>
             <div class="navbar-links">
                 {% if user.is_authenticated %}
-                    <a href="{% url 'home' %}">🏠 Bosh sahifa</a>
-                    <a href="{% url 'statistics' %}">📊 Statistika</a>
+                    <a href="{% url 'home' %}">🏠 <span data-translate="home">Bosh sahifa</span></a>
+                    <a href="{% url 'statistics' %}">📊 <span data-translate="statistics">Statistika</span></a>
                     <div class="user-info">
-                        <span class="score-badge">⭐ {{ user.statistics.total_score|default:0 }} ball</span>
-                        <span>{{ user.username }}</span>
-                        <form action="{% url 'logout' %}" method="post" style="display: inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-secondary">Chiqish</button>
-                        </form>
+                        <span class="score-badge">⭐ {{ user.statistics.total_score|default:0 }} <span data-translate="points">ball</span></span>
+                        
+                        <!-- Profile Dropdown -->
+                        <div class="profile-dropdown" id="profileDropdown">
+                            <div class="profile-btn" onclick="toggleDropdown()">
+                                <div class="profile-avatar">{{ user.username|slice:":1"|upper }}</div>
+                                <span class="profile-name">{{ user.username }}</span>
+                                <span class="dropdown-arrow">▼</span>
+                            </div>
+                            
+                            <div class="dropdown-menu">
+                                <div class="dropdown-header">
+                                    <div class="avatar-large">{{ user.username|slice:":1"|upper }}</div>
+                                    <div class="user-name">{{ user.username }}</div>
+                                    <div class="user-email">{{ user.email|default:"O'yinchi" }}</div>
+                                </div>
+                                
+                                <div class="dropdown-section">
+                                    <div class="dropdown-section-title" data-translate="appearance">Ko'rinish</div>
+                                    <div class="theme-toggle">
+                                        <div class="theme-toggle-label">
+                                            <span class="icon">🌙</span>
+                                            <span data-translate="dark_mode">Qorong'i rejim</span>
+                                        </div>
+                                        <div class="toggle-switch" id="themeToggle" onclick="toggleTheme()"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="dropdown-section">
+                                    <div class="dropdown-section-title" data-translate="language">Til</div>
+                                    <div class="language-options">
+                                        <button class="lang-btn active" onclick="setLanguage('uz')">🇺🇿 O'zbek</button>
+                                        <button class="lang-btn" onclick="setLanguage('en')">🇬🇧 English</button>
+                                        <button class="lang-btn" onclick="setLanguage('ja')">🇯🇵 日本語</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="dropdown-section">
+                                    <a href="{% url 'statistics' %}" class="dropdown-item">
+                                        <span class="icon">⚙️</span>
+                                        <span data-translate="settings">Sozlamalar</span>
+                                    </a>
+                                    <form action="{% url 'logout' %}" method="post" style="margin: 0;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item logout-btn">
+                                            <span class="icon">🚪</span>
+                                            <span data-translate="logout">Chiqish</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 {% else %}
-                    <a href="{% url 'login' %}">Kirish</a>
-                    <a href="{% url 'register' %}">Ro'yxatdan o'tish</a>
+                    <a href="{% url 'login' %}" data-translate="login">Kirish</a>
+                    <a href="{% url 'register' %}" data-translate="register">Ro'yxatdan o'tish</a>
                 {% endif %}
             </div>
         </nav>
@@ -281,8 +582,117 @@
         {% block content %}{% endblock %}
     </div>
     
+    <script>
+        // Translations
+        const translations = {
+            uz: {
+                home: "Bosh sahifa",
+                statistics: "Statistika",
+                points: "ball",
+                appearance: "Ko'rinish",
+                dark_mode: "Qorong'i rejim",
+                language: "Til",
+                settings: "Sozlamalar",
+                logout: "Chiqish",
+                login: "Kirish",
+                register: "Ro'yxatdan o'tish"
+            },
+            en: {
+                home: "Home",
+                statistics: "Statistics",
+                points: "points",
+                appearance: "Appearance",
+                dark_mode: "Dark mode",
+                language: "Language",
+                settings: "Settings",
+                logout: "Logout",
+                login: "Login",
+                register: "Register"
+            },
+            ja: {
+                home: "ホーム",
+                statistics: "統計",
+                points: "ポイント",
+                appearance: "外観",
+                dark_mode: "ダークモード",
+                language: "言語",
+                settings: "設定",
+                logout: "ログアウト",
+                login: "ログイン",
+                register: "登録"
+            }
+        };
+        
+        // Toggle dropdown
+        function toggleDropdown() {
+            document.getElementById('profileDropdown').classList.toggle('active');
+        }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('profileDropdown');
+            if (dropdown && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+        
+        // Theme toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const toggle = document.getElementById('themeToggle');
+            const currentTheme = html.getAttribute('data-theme');
+            
+            if (currentTheme === 'dark') {
+                html.setAttribute('data-theme', 'light');
+                toggle.classList.remove('active');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                toggle.classList.add('active');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        
+        // Load saved theme
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            const toggle = document.getElementById('themeToggle');
+            
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            if (savedTheme === 'dark' && toggle) {
+                toggle.classList.add('active');
+            }
+            
+            // Load saved language
+            const savedLang = localStorage.getItem('language') || 'uz';
+            setLanguage(savedLang, false);
+        });
+        
+        // Language switcher
+        function setLanguage(lang, save = true) {
+            const elements = document.querySelectorAll('[data-translate]');
+            const langBtns = document.querySelectorAll('.lang-btn');
+            
+            elements.forEach(el => {
+                const key = el.getAttribute('data-translate');
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            
+            langBtns.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.includes(lang === 'uz' ? "O'zbek" : lang === 'en' ? 'English' : '日本語')) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            if (save) {
+                localStorage.setItem('language', lang);
+            }
+        }
+    </script>
+    
     {% block extra_js %}{% endblock %}
 </body>
 </html>
-
-

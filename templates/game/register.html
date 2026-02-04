@@ -1,50 +1,202 @@
-{% extends 'base.html' %}
-
-{% block title %}Ro'yxatdan o'tish - Jumboq O'yini{% endblock %}
-
-{% block content %}
-<div class="card" style="max-width: 400px; margin: 50px auto;">
-    <h2 style="text-align: center; margin-bottom: 30px; color: #667eea;">Ro'yxatdan o'tish</h2>
-    
-    <form method="post">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="id_username">Foydalanuvchi nomi:</label>
-            {{ form.username }}
-            {% if form.username.errors %}
-                <div style="color: #dc3545; font-size: 14px; margin-top: 5px;">
-                    {{ form.username.errors }}
-                </div>
-            {% endif %}
-        </div>
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ro'yxatdan o'tish - Jumboq O'yini</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         
-        <div class="form-group">
-            <label for="id_password1">Parol:</label>
-            {{ form.password1 }}
-            {% if form.password1.errors %}
-                <div style="color: #dc3545; font-size: 14px; margin-top: 5px;">
-                    {{ form.password1.errors }}
-                </div>
-            {% endif %}
-        </div>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         
-        <div class="form-group">
-            <label for="id_password2">Parolni tasdiqlang:</label>
-            {{ form.password2 }}
-            {% if form.password2.errors %}
-                <div style="color: #dc3545; font-size: 14px; margin-top: 5px;">
-                    {{ form.password2.errors }}
-                </div>
-            {% endif %}
-        </div>
+        .register-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+        }
         
-        <button type="submit" class="btn" style="width: 100%;">Ro'yxatdan o'tish</button>
-    </form>
-    
-    <p style="text-align: center; margin-top: 20px;">
-        Allaqachon hisobingiz bormi? <a href="{% url 'login' %}" style="color: #667eea;">Kirish</a>
-    </p>
-</div>
-{% endblock %}
+        .register-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .register-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+        
+        .register-header .logo {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+        
+        .register-header h1 {
+            color: #667eea;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .register-header p {
+            color: #888;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        
+        .error-text {
+            color: #dc3545;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+        
+        .btn-register {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-register:active {
+            transform: translateY(0);
+        }
+        
+        .register-footer {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid #eee;
+        }
+        
+        .register-footer p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .register-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .register-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-card">
+            <div class="register-header">
+                <div class="logo">🧩</div>
+                <h1>Ro'yxatdan o'tish</h1>
+                <p>Yangi hisob yarating</p>
+            </div>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="success-message">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_username">Foydalanuvchi nomi</label>
+                    <input type="text" id="id_username" name="username" placeholder="Username kiriting" required autofocus 
+                           value="{{ form.username.value|default:'' }}">
+                    {% if form.username.errors %}
+                        <div class="error-text">{{ form.username.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_password1">Parol</label>
+                    <input type="password" id="id_password1" name="password1" placeholder="Parol kiriting" required>
+                    {% if form.password1.errors %}
+                        <div class="error-text">{{ form.password1.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_password2">Parolni tasdiqlang</label>
+                    <input type="password" id="id_password2" name="password2" placeholder="Parolni qayta kiriting" required>
+                    {% if form.password2.errors %}
+                        <div class="error-text">{{ form.password2.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn-register">Ro'yxatdan o'tish</button>
+            </form>
+            
+            <div class="register-footer">
+                <p>Allaqachon hisobingiz bormi? <a href="{% url 'login' %}">Kirish</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
 
 
