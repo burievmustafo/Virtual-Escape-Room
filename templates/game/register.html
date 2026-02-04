@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Ro'yxatdan o'tish - Jumboq O'yini{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 400px; margin: 50px auto;">
+    <h2 style="text-align: center; margin-bottom: 30px; color: #667eea;">Ro'yxatdan o'tish</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_username">Foydalanuvchi nomi:</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+                <div style="color: #dc3545; font-size: 14px; margin-top: 5px;">
+                    {{ form.username.errors }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_password1">Parol:</label>
+            {{ form.password1 }}
+            {% if form.password1.errors %}
+                <div style="color: #dc3545; font-size: 14px; margin-top: 5px;">
+                    {{ form.password1.errors }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_password2">Parolni tasdiqlang:</label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}
+                <div style="color: #dc3545; font-size: 14px; margin-top: 5px;">
+                    {{ form.password2.errors }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <button type="submit" class="btn" style="width: 100%;">Ro'yxatdan o'tish</button>
+    </form>
+    
+    <p style="text-align: center; margin-top: 20px;">
+        Allaqachon hisobingiz bormi? <a href="{% url 'login' %}" style="color: #667eea;">Kirish</a>
+    </p>
+</div>
+{% endblock %}
+
+

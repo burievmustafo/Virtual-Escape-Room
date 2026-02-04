@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ puzzle.title }} - Jumboq O'yini{% endblock %}
+
+{% block extra_css %}
+<style>
+    .puzzle-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .timer {
+        text-align: center;
+        font-size: 32px;
+        font-weight: bold;
+        color: #667eea;
+        margin: 20px 0;
+        padding: 20px;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 10px;
+    }
+    
+    .puzzle-question {
+        background: #f8f9fa;
+        padding: 25px;
+        border-radius: 10px;
+        margin: 20px 0;
+        border-left: 4px solid #667eea;
+    }
+    
+    .puzzle-question h3 {
+        color: #667eea;
+        margin-bottom: 15px;
+    }
+    
+    .answer-form {
+        margin-top: 30px;
+    }
+    
+    .answer-input {
+        width: 100%;
+        padding: 15px;
+        font-size: 18px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+    
+    .answer-input:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+    
+    .hint-section {
+        margin-top: 20px;
+        padding: 15px;
+        background: #fff3cd;
+        border-radius: 8px;
+        border-left: 4px solid #ffc107;
+    }
+    
+    .result-message {
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+    }
+    
+    .result-message.success {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .result-message.error {
+        background: #f8d7da;
+        color: #721c24;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="puzzle-container">
+    <div class="card">
+        <a href="{% url 'room' puzzle.room.id %}" class="btn btn-secondary" style="margin-bottom: 20px;">← Xonaga qaytish</a>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="color: #667eea;">{{ puzzle.title }}</h2>
+            <span style="background: #667eea; color: white; padding: 8px 16px; border-radius: 20px;">
+                {{ puzzle.points }} ball
+            </span>
+        </div>
+        
+        <div style="display: flex; gap: 15px; margin-bottom: 20px; font-size: 14px; color: #666;">
+            <span>📂 {{ puzzle.room.title }}</span>
+            <span>🎯 {{ puzzle.get_puzzle_type_display }}</span>
+            {% if progress.attempts > 0 %}
+                <span>🔄 {{ progress.attempts }} urinish</span>
+            {% endif %}
+        </div>
+        
+        <div class="timer" id="timer">00:00</div>
+        
+        {% if progress.is_completed %}
+            <div class="result-message success">
+                ✅ Bu jumboq tugallangan!<br>
+                <small>Ball: {{ progress.score }} | Vaqt: {{ progress.time_taken }}s</small>
+            </div>
+        {% endif %}
+        
+        <div class="puzzle-question">
+            <h3>Savol:</h3>
+            <p style="font-size: 18px; line-height: 1.6; white-space: pre-line;">{{ puzzle.question }}</p>
+        </div>
+        
+        {% if puzzle.hint %}
+            <div class="hint-section">
+                <strong>💡 Maslahat:</strong> {{ puzzle.hint }}
+            </div>
+        {% endif %}
+        
+        {% if not progress.is_completed %}
+            <div class="answer-form">
+                <input type="text" 
+                       id="answer-input" 
+                       class="answer-input" 
+                       placeholder="Javobingizni kiriting..."
+                       autocomplete="off">
+                <button id="submit-btn" class="btn" style="width: 100%;">Javobni yuborish</button>
+            </div>
+        {% endif %}
+        
+        <div id="result-message"></div>
+    </div>
+</div>
+
+<script>
+    // Global o'zgaruvchilar
+    let startTime;
+    try {
+        startTime = parseInt('{{ start_time|default:0 }}') || Math.floor(Date.now() / 1000);
+    } catch (e) {
+        startTime = Math.floor(Date.now() / 1000);
+    }
+    let timerInterval;
+    let elapsedSeconds = 0;
+    
+    // DOM yuklanganda ishlatish
+    document.addEventListener('DOMContentLoaded', function() {
+        // Timer
+        function updateTimer() {
+            elapsedSeconds = Math.floor((Date.now() / 1000) - startTime);
+            const minutes = Math.floor(elapsedSeconds / 60);
+            const seconds = elapsedSeconds % 60;
+            const timerEl = document.getElementById('timer');
+            if (timerEl) {
+                timerEl.textContent = 
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+        }
+        
+        timerInterval = setInterval(updateTimer, 1000);
+        updateTimer();
+        
+        // Submit tugmasi uchun event listener
+        const submitBtn = document.getElementById('submit-btn');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (window.submitAnswer) {
+                    window.submitAnswer();
+                }
+            });
+        }
+        
+        // Enter tugmasini qo'llab-quvvatlash
+        const answerInput = document.getElementById('answer-input');
+        if (answerInput) {
+            answerInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (window.submitAnswer) {
+                        window.submitAnswer();
+                    }
+                }
+            });
+        }
+    });
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // CSRF token olish
+    function getCSRFToken() {
+        const token = getCookie('csrftoken');
+        if (!token) {
+            // Agar cookie bo'lmasa, meta tagdan olish
+            const metaTag = document.querySelector('meta[name=csrf-token]');
+            if (metaTag) {
+                return metaTag.getAttribute('content');
+            }
+        }
+        return token;
+    }
+    
+    // Global scope'da funksiyani e'lon qilish
+    window.submitAnswer = async function() {
+        const answerInput = document.getElementById('answer-input');
+        if (!answerInput) {
+            console.error('Answer input topilmadi');
+            return;
+        }
+        
+        const answer = answerInput.value.trim();
+        
+        if (!answer) {
+            alert('Iltimos, javob kiriting!');
+            return;
+        }
+        
+        const resultDiv = document.getElementById('result-message');
+        resultDiv.innerHTML = '<div style="text-align: center; padding: 20px;">Yuborilmoqda...</div>';
+        
+        const csrftoken = getCSRFToken();
+        
+        if (!csrftoken) {
+            resultDiv.innerHTML = `
+                <div class="result-message error">
+                    ❌ CSRF token topilmadi. Sahifani yangilang.
+                </div>
+            `;
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/submit-answer/{{ puzzle.id }}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    answer: answer,
+                    time_taken: elapsedSeconds
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.correct) {
+                    clearInterval(timerInterval);
+                    resultDiv.innerHTML = `
+                        <div class="result-message success">
+                            ✅ ${data.message}<br>
+                            <small>Ball: ${data.score} | Vaqt: ${elapsedSeconds}s</small>
+                        </div>
+                    `;
+                    answerInput.disabled = true;
+                    
+                    setTimeout(() => {
+                        if (data.room_completed) {
+                            if (data.next_room) {
+                                if (confirm(`Xona tugallandi! Keyingi xonaga o'tasizmi?\n\n${data.next_room.title}`)) {
+                                    window.location.href = '/room/' + data.next_room.id + '/';
+                                } else {
+                                    window.location.href = '/';
+                                }
+                            } else {
+                                alert('Barcha xonalar tugallandi! Tabriklaymiz! 🎉');
+                                window.location.href = '/';
+                            }
+                        } else if (data.next_puzzle_id) {
+                            window.location.href = '/puzzle/' + data.next_puzzle_id + '/';
+                        } else {
+                            window.location.href = '/room/{{ puzzle.room.id }}/';
+                        }
+                    }, 2000);
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result-message error">
+                            ❌ ${data.message}<br>
+                            <small>Urinishlar: ${data.attempts}</small>
+                        </div>
+                    `;
+                    answerInput.value = '';
+                    answerInput.focus();
+                }
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="result-message error">
+                        ❌ ${data.message || 'Xatolik yuz berdi'}
+                    </div>
+                `;
+            }
+        } catch (error) {
+            resultDiv.innerHTML = `
+                <div class="result-message error">
+                    ❌ Xatolik yuz berdi. Qayta urinib ko'ring.<br>
+                    <small style="font-size: 12px;">${error.message}</small>
+                </div>
+            `;
+            console.error('Error:', error);
+            const answerInput = document.getElementById('answer-input');
+            if (answerInput) {
+                answerInput.disabled = false;
+            }
+        }
+    };
+</script>
+{% endblock %}
+

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Bosh sahifa - Jumboq O'yini{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2 style="text-align: center; margin-bottom: 30px; color: #667eea;">Xush kelibsiz, {{ user.username }}! 🎮</h2>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>{{ stats.total_score|default:0 }}</h3>
+            <p>Jami ball</p>
+        </div>
+        <div class="stat-card">
+            <h3>{{ stats.rooms_completed|default:0 }}</h3>
+            <p>Tugallangan xonalar</p>
+        </div>
+        <div class="stat-card">
+            <h3>{{ stats.puzzles_completed|default:0 }}</h3>
+            <p>Tugallangan jumboqlar</p>
+        </div>
+        <div class="stat-card">
+            <h3>{{ stats.total_time|default:0|floatformat:0 }}</h3>
+            <p>Jami vaqt (soniya)</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2 style="margin-bottom: 20px; color: #667eea;">Xonalar</h2>
+    
+    {% if rooms %}
+        <div class="room-grid">
+            {% for room_data in rooms %}
+                <div class="room-card {% if room_data.is_locked %}locked{% endif %}">
+                    <h3>{{ room_data.room.order }}. {{ room_data.room.title }}</h3>
+                    <p style="color: #666; margin: 10px 0;">{{ room_data.room.description|truncatewords:15 }}</p>
+                    
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ room_data.progress_percent }}%;"></div>
+                    </div>
+                    
+                    <p style="font-size: 14px; color: #666; margin: 10px 0;">
+                        {{ room_data.completed }} / {{ room_data.total }} jumboq tugallangan
+                    </p>
+                    
+                    {% if not room_data.is_locked %}
+                        <a href="{% url 'room' room_data.room.id %}" class="btn" style="width: 100%; margin-top: 15px;">
+                            {% if room_data.completed == room_data.total %}
+                                ✅ Ko'rish
+                            {% else %}
+                                🚪 Xonaga kirish
+                            {% endif %}
+                        </a>
+                    {% else %}
+                        <button class="btn btn-secondary" style="width: 100%; margin-top: 15px;" disabled>
+                            🔒 Qulflangan
+                        </button>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p style="text-align: center; color: #666; padding: 40px;">
+            Hozircha xonalar mavjud emas. Admin panel orqali xona qo'shing.
+        </p>
+    {% endif %}
+</div>
+{% endblock %}
+
+

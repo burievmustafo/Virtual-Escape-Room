@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Kirish - Jumboq O'yini{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 400px; margin: 50px auto;">
+    <h2 style="text-align: center; margin-bottom: 30px; color: #667eea;">Kirish</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="username">Foydalanuvchi nomi:</label>
+            <input type="text" id="username" name="username" required autofocus>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Parol:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        
+        <button type="submit" class="btn" style="width: 100%;">Kirish</button>
+    </form>
+    
+    <p style="text-align: center; margin-top: 20px;">
+        Hisobingiz yo'qmi? <a href="{% url 'register' %}" style="color: #667eea;">Ro'yxatdan o'ting</a>
+    </p>
+</div>
+{% endblock %}
+
+
