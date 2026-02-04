@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils import timezone
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from datetime import datetime
 import json
 
@@ -295,10 +295,22 @@ def statistics_view(request):
             'time': room_time,
         })
     
+    leaderboard = UserStatistics.objects.select_related('user').order_by(
+        '-total_score', 'total_time', 'user__username'
+    )[:10]
+
+    higher_rank_count = UserStatistics.objects.filter(
+        Q(total_score__gt=stats.total_score) |
+        Q(total_score=stats.total_score, total_time__lt=stats.total_time) |
+        Q(total_score=stats.total_score, total_time=stats.total_time, user__username__lt=request.user.username)
+    ).count()
+
     context = {
         'stats': stats,
         'completed_progress': completed_progress[:20],  # Oxirgi 20 ta
         'room_stats': room_stats,
+        'leaderboard': leaderboard,
+        'current_rank': higher_rank_count + 1,
     }
     return render(request, 'game/statistics.html', context)
 
