@@ -157,11 +157,15 @@ def puzzle_view(request, puzzle_id):
         defaults={'room': puzzle.room, 'started_at': timezone.now()}
     )
     
-    # Vaqtni hisoblash
-    if created:
-        start_time = timezone.now()
-    else:
+    # Vaqtni hisoblash - har safar yangi jumboqqa kirganda vaqt qaytadan boshlanadi
+    if progress.is_completed:
+        # Tugallangan jumboq uchun eski vaqtni ko'rsatish
         start_time = progress.started_at
+    else:
+        # Tugallanmagan jumboq uchun vaqtni qaytadan boshlash
+        start_time = timezone.now()
+        progress.started_at = start_time
+        progress.save()
     
     # JavaScript uchun timestamp
     start_timestamp = int(start_time.timestamp()) if start_time else 0

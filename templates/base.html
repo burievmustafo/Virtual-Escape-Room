@@ -258,7 +258,10 @@
                     <div class="user-info">
                         <span class="score-badge">⭐ {{ user.statistics.total_score|default:0 }} ball</span>
                         <span>{{ user.username }}</span>
-                        <a href="{% url 'logout' %}" class="btn btn-secondary">Chiqish</a>
+                        <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-secondary">Chiqish</button>
+                        </form>
                     </div>
                 {% else %}
                     <a href="{% url 'login' %}">Kirish</a>
