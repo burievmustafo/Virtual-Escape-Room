@@ -1,17 +1,36 @@
 from django.contrib import admin
+from modeltranslation.admin import TabbedTranslationAdmin
 from .models import Room, Puzzle, UserProgress, UserStatistics
 
 
 @admin.register(Room)
-class RoomAdmin(admin.ModelAdmin):
+class RoomAdmin(TabbedTranslationAdmin):
+    """
+    Xona admin - tarjimalar tab ko'rinishida
+    Har bir til uchun alohida tab: O'zbek | English | 日本語
+    """
     list_display = ['order', 'title', 'is_active', 'created_at']
     list_filter = ['is_active', 'created_at']
     search_fields = ['title', 'description']
     list_per_page = 20
+    
+    fieldsets = (
+        ('Asosiy', {
+            'fields': ('order', 'is_active')
+        }),
+        ('Tarjimalar', {
+            'fields': ('title', 'description'),
+            'description': '🌍 Har bir til uchun tab ustiga bosing'
+        }),
+    )
 
 
 @admin.register(Puzzle)
-class PuzzleAdmin(admin.ModelAdmin):
+class PuzzleAdmin(TabbedTranslationAdmin):
+    """
+    Jumboq admin - tarjimalar tab ko'rinishida
+    Har bir til uchun alohida tab: O'zbek | English | 日本語
+    """
     list_display = ['title', 'room', 'puzzle_type', 'points', 'order']
     list_filter = ['puzzle_type', 'room']
     search_fields = ['title', 'question', 'correct_answer']
@@ -20,13 +39,11 @@ class PuzzleAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Asosiy ma\'lumotlar', {
-            'fields': ('room', 'title', 'description', 'puzzle_type', 'order')
+            'fields': ('room', 'puzzle_type', 'order', 'points', 'correct_answer')
         }),
-        ('Savol va javob', {
-            'fields': ('question', 'correct_answer', 'hint')
-        }),
-        ('Ball', {
-            'fields': ('points',)
+        ('Tarjimalar', {
+            'fields': ('title', 'description', 'question', 'hint'),
+            'description': '🌍 Har bir til uchun tab ustiga bosing (O\'zbek | English | 日本語)'
         }),
     )
 

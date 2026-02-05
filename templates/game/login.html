@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <title>Kirish - Jumboq O'yini</title>
     <style>
         * {
@@ -36,6 +37,29 @@
         .login-header {
             text-align: center;
             margin-bottom: 35px;
+        }
+
+        .lang-switcher {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .lang-btn {
+            padding: 6px 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f8f9fa;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .lang-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
         }
         
         .login-header .logo {
@@ -144,9 +168,14 @@
     <div class="login-container">
         <div class="login-card">
             <div class="login-header">
+                <div class="lang-switcher">
+                    <button class="lang-btn active" data-lang="uz" onclick="setLanguage('uz')">🇺🇿</button>
+                    <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧</button>
+                    <button class="lang-btn" data-lang="ja" onclick="setLanguage('ja')">🇯🇵</button>
+                </div>
                 <div class="logo">🧩</div>
-                <h1>Jumboq O'yini</h1>
-                <p>Hisobingizga kiring</p>
+                <h1 data-translate="app_title">Jumboq O'yini</h1>
+                <p data-translate="login_subtitle">Hisobingizga kiring</p>
             </div>
             
             {% if messages %}
@@ -158,23 +187,108 @@
             <form method="post">
                 {% csrf_token %}
                 <div class="form-group">
-                    <label for="username">Foydalanuvchi nomi</label>
-                    <input type="text" id="username" name="username" placeholder="Username kiriting" required autofocus>
+                    <label for="username" data-translate="username">Foydalanuvchi nomi</label>
+                    <input type="text" id="username" name="username" data-placeholder-translate="username_ph" placeholder="Username kiriting" required autofocus>
                 </div>
                 
                 <div class="form-group">
-                    <label for="password">Parol</label>
-                    <input type="password" id="password" name="password" placeholder="Parol kiriting" required>
+                    <label for="password" data-translate="password">Parol</label>
+                    <input type="password" id="password" name="password" data-placeholder-translate="password_ph" placeholder="Parol kiriting" required>
                 </div>
                 
-                <button type="submit" class="btn-login">Kirish</button>
+                <button type="submit" class="btn-login" data-translate="login_btn">Kirish</button>
             </form>
             
             <div class="login-footer">
-                <p>Hisobingiz yo'qmi? <a href="{% url 'register' %}">Ro'yxatdan o'ting</a></p>
+                <p><span data-translate="no_account">Hisobingiz yo'qmi?</span> <a href="{% url 'register' %}" data-translate="register">Ro'yxatdan o'ting</a></p>
             </div>
         </div>
     </div>
+
+    <script>
+        const translations = {
+            uz: {
+                app_title: "Jumboq O'yini",
+                login_subtitle: "Hisobingizga kiring",
+                username: "Foydalanuvchi nomi",
+                password: "Parol",
+                login_btn: "Kirish",
+                no_account: "Hisobingiz yo'qmi?",
+                register: "Ro'yxatdan o'ting",
+                username_ph: "Username kiriting",
+                password_ph: "Parol kiriting"
+            },
+            en: {
+                app_title: "Puzzle Game",
+                login_subtitle: "Sign in to your account",
+                username: "Username",
+                password: "Password",
+                login_btn: "Login",
+                no_account: "Don't have an account?",
+                register: "Register",
+                username_ph: "Enter your username",
+                password_ph: "Enter your password"
+            },
+            ja: {
+                app_title: "パズルゲーム",
+                login_subtitle: "アカウントにログイン",
+                username: "ユーザー名",
+                password: "パスワード",
+                login_btn: "ログイン",
+                no_account: "アカウントをお持ちでないですか？",
+                register: "登録",
+                username_ph: "ユーザー名を入力",
+                password_ph: "パスワードを入力"
+            }
+        };
+
+        function setLanguage(lang, save = true) {
+            const elements = document.querySelectorAll('[data-translate]');
+            const placeholders = document.querySelectorAll('[data-placeholder-translate]');
+            const langBtns = document.querySelectorAll('.lang-btn');
+
+            elements.forEach(el => {
+                const key = el.getAttribute('data-translate');
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+
+            placeholders.forEach(el => {
+                const key = el.getAttribute('data-placeholder-translate');
+                if (translations[lang] && translations[lang][key]) {
+                    el.placeholder = translations[lang][key];
+                }
+            });
+
+            langBtns.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-lang') === lang) {
+                    btn.classList.add('active');
+                }
+            });
+
+            if (save) {
+                localStorage.setItem('language', lang);
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+                if (csrf) {
+                    fetch('/set-language/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrf
+                        },
+                        body: JSON.stringify({ language: lang })
+                    }).catch(() => {});
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedLang = localStorage.getItem('language') || 'uz';
+            setLanguage(savedLang, false);
+        });
+    </script>
 </body>
 </html>
 

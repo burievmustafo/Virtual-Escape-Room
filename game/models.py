@@ -62,6 +62,7 @@ class UserProgress(models.Model):
     time_taken = models.IntegerField(default=0, verbose_name="O'tkazilgan vaqt (soniya)")
     attempts = models.IntegerField(default=0, verbose_name="Urinishlar soni")
     score = models.IntegerField(default=0, verbose_name="Ball")
+    used_hint = models.BooleanField(default=False, verbose_name="Maslahat ishlatilgan")
     
     class Meta:
         verbose_name = "Foydalanuvchi progressi"
@@ -78,16 +79,13 @@ class UserProgress(models.Model):
         self.completed_at = timezone.now()
         self.time_taken = time_taken
         self.attempts += 1
-        # Vaqtga qarab ball hisoblash
+        # Vaqtga qarab ball hisoblash: qancha tez bo'lsa, shuncha ko'p
         base_score = self.puzzle.points
-        if time_taken < 30:
-            self.score = base_score
-        elif time_taken < 60:
-            self.score = int(base_score * 0.9)
-        elif time_taken < 120:
-            self.score = int(base_score * 0.7)
-        else:
-            self.score = int(base_score * 0.5)
+        max_time = 180  # 3 daqiqa ichida maksimal ball
+        min_multiplier = 0.2  # Eng past ball foizi
+        time_factor = 1 - (time_taken / max_time)
+        multiplier = max(min_multiplier, min(1, time_factor))
+        self.score = max(1, int(round(base_score * multiplier)))
         self.save()
 
 
@@ -100,6 +98,8 @@ class UserStatistics(models.Model):
     total_time = models.IntegerField(default=0, verbose_name="Jami vaqt (soniya)")
     current_room = models.ForeignKey(Room, on_delete=models.SET_NULL, null=True, blank=True, 
                                      related_name='current_users', verbose_name="Joriy xona")
+    hint_tokens = models.IntegerField(default=3, verbose_name="Maslahat tokenlari")
+    last_hint_refill = models.DateField(null=True, blank=True, verbose_name="Token yangilangan sana")
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
@@ -146,4 +146,13 @@ class UserStatistics(models.Model):
             self.current_room = None
         
         self.save()
+
+    def ensure_hint_tokens(self):
+        """Kunlik tokenlarni yangilash"""
+        today = timezone.localdate()
+        if self.last_hint_refill != today:
+            self.hint_tokens = 3
+            self.last_hint_refill = today
+            self.save(update_fields=['hint_tokens', 'last_hint_refill'])
+        return self.hint_tokens
 

@@ -4,30 +4,71 @@
 
 {% block content %}
 <div class="card">
-    <h2 style="text-align: center; margin-bottom: 30px; color: #667eea;">Xush kelibsiz, {{ user.username }}! 🎮</h2>
+    <h2 style="text-align: center; margin-bottom: 30px; color: #667eea;">
+        <span data-translate="welcome">Xush kelibsiz</span>, {{ user.username }}! 🎮
+    </h2>
     
     <div class="stats-grid">
         <div class="stat-card">
             <h3>{{ stats.total_score|default:0 }}</h3>
-            <p>Jami ball</p>
+            <p data-translate="total_score">Jami ball</p>
         </div>
         <div class="stat-card">
             <h3>{{ stats.rooms_completed|default:0 }}</h3>
-            <p>Tugallangan xonalar</p>
+            <p data-translate="completed_rooms">Tugallangan xonalar</p>
         </div>
         <div class="stat-card">
             <h3>{{ stats.puzzles_completed|default:0 }}</h3>
-            <p>Tugallangan jumboqlar</p>
+            <p data-translate="completed_puzzles">Tugallangan jumboqlar</p>
         </div>
         <div class="stat-card">
             <h3>{{ stats.total_time|default:0|floatformat:0 }}</h3>
-            <p>Jami vaqt (soniya)</p>
+            <p data-translate="total_time">Jami vaqt (soniya)</p>
         </div>
     </div>
 </div>
 
+{% if daily_puzzle %}
 <div class="card">
-    <h2 style="margin-bottom: 20px; color: #667eea;">Xonalar</h2>
+    <h2 style="margin-bottom: 16px; color: #667eea;" data-translate="daily_challenge">Kunlik jumboq</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+        <div>
+            <div style="font-weight: 600; margin-bottom: 6px;">{{ daily_puzzle.title }}</div>
+            <div style="color: #666; font-size: 14px;">{{ daily_puzzle.description|default:"" }}</div>
+        </div>
+        {% if daily_completed %}
+            <span class="btn btn-success" style="cursor: default;" data-translate="completed">Tugallangan</span>
+        {% else %}
+            <a class="btn" href="{% url 'puzzle' daily_puzzle.id %}" data-translate="play_now">Hozir o'ynash</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<div class="card">
+    <h2 style="margin-bottom: 16px; color: #667eea;" data-translate="achievements">Yutuqlar</h2>
+
+    {% if badges %}
+        <div class="badge-grid">
+            {% for badge in badges %}
+                <div class="badge-card" data-tone="{{ badge.tone|default:'primary' }}">
+                    <div class="badge-icon">{{ badge.icon }}</div>
+                    <div>
+                        <div class="badge-title">{{ badge.title }}</div>
+                        <div class="badge-desc">{{ badge.desc }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p style="text-align: center; color: #666; padding: 10px;" data-translate="no_badges">
+            Hozircha yutuqlar yo'q.
+        </p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2 style="margin-bottom: 20px; color: #667eea;" data-translate="rooms">Xonalar</h2>
     
     {% if rooms %}
         <div class="room-grid">
@@ -41,27 +82,27 @@
                     </div>
                     
                     <p style="font-size: 14px; color: #666; margin: 10px 0;">
-                        {{ room_data.completed }} / {{ room_data.total }} jumboq tugallangan
+                        {{ room_data.completed }} / {{ room_data.total }} <span data-translate="puzzles_completed">jumboq tugallangan</span>
                     </p>
                     
                     {% if not room_data.is_locked %}
                         <a href="{% url 'room' room_data.room.id %}" class="btn" style="width: 100%; margin-top: 15px;">
                             {% if room_data.completed == room_data.total %}
-                                ✅ Ko'rish
+                                ✅ <span data-translate="view">Ko'rish</span>
                             {% else %}
-                                🚪 Xonaga kirish
+                                🚪 <span data-translate="enter_room">Xonaga kirish</span>
                             {% endif %}
                         </a>
                     {% else %}
                         <button class="btn btn-secondary" style="width: 100%; margin-top: 15px;" disabled>
-                            🔒 Qulflangan
+                            🔒 <span data-translate="locked">Qulflangan</span>
                         </button>
                     {% endif %}
                 </div>
             {% endfor %}
         </div>
     {% else %}
-        <p style="text-align: center; color: #666; padding: 40px;">
+        <p style="text-align: center; color: #666; padding: 40px;" data-translate="no_rooms">
             Hozircha xonalar mavjud emas. Admin panel orqali xona qo'shing.
         </p>
     {% endif %}

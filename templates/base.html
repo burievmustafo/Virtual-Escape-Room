@@ -12,16 +12,24 @@
             --text-primary: #333;
             --text-secondary: #666;
             --card-bg: white;
-            --border-color: #e0e0e0;
+            --border-color: #e6e8f0;
+            --accent: #667eea;
+            --shadow-sm: 0 2px 8px rgba(16, 24, 40, 0.08);
+            --shadow-md: 0 8px 20px rgba(16, 24, 40, 0.12);
+            --shadow-lg: 0 16px 40px rgba(16, 24, 40, 0.16);
         }
         
         [data-theme="dark"] {
             --bg-primary: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            --bg-secondary: rgba(30, 30, 50, 0.95);
+            --bg-secondary: rgba(22, 24, 40, 0.95);
             --text-primary: #f0f0f0;
             --text-secondary: #aaa;
-            --card-bg: #2a2a4a;
-            --border-color: #444;
+            --card-bg: #1f2235;
+            --border-color: #2c324a;
+            --accent: #8fa2ff;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+            --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
         }
         
         * {
@@ -46,18 +54,20 @@
         
         .navbar {
             background: var(--bg-secondary);
-            padding: 15px 30px;
-            border-radius: 10px;
+            padding: 14px 26px;
+            border-radius: 14px;
             margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
         .navbar h1 {
-            color: #667eea;
-            font-size: 24px;
+            color: var(--accent);
+            font-size: 22px;
+            letter-spacing: 0.2px;
         }
         
         [data-theme="dark"] .navbar h1 {
@@ -80,7 +90,7 @@
         }
         
         .navbar-links > a:hover {
-            background: #667eea;
+            background: var(--accent);
             color: white;
         }
         
@@ -93,9 +103,11 @@
         .score-badge {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: bold;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: var(--shadow-sm);
         }
         
         /* Profile Dropdown */
@@ -106,18 +118,10 @@
         .profile-btn {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 25px;
+            background: transparent;
+            border: none;
+            padding: 0;
             cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .profile-btn:hover {
-            border-color: #667eea;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
         }
         
         .profile-avatar {
@@ -152,7 +156,7 @@
             right: 0;
             background: var(--card-bg);
             border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--shadow-lg);
             min-width: 250px;
             opacity: 0;
             visibility: hidden;
@@ -326,10 +330,17 @@
         
         .card {
             background: var(--card-bg);
-            border-radius: 15px;
-            padding: 30px;
+            border-radius: 16px;
+            padding: 28px;
             margin-bottom: 20px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
         }
         
         .btn {
@@ -343,12 +354,12 @@
             cursor: pointer;
             font-size: 16px;
             font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
         }
         
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.35);
         }
         
         .btn:active {
@@ -415,6 +426,20 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+
+        .story-banner {
+            background: rgba(102, 126, 234, 0.12);
+            border: 1px dashed rgba(102, 126, 234, 0.35);
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        [data-theme="dark"] .story-banner {
+            background: rgba(143, 162, 255, 0.12);
+            border-color: rgba(143, 162, 255, 0.35);
+        }
         
         .room-grid {
             display: grid;
@@ -425,17 +450,18 @@
         
         .room-card {
             background: var(--card-bg);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             position: relative;
             overflow: hidden;
         }
         
         .room-card:hover:not(.locked) {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
         }
         
         .room-card.locked {
@@ -452,7 +478,7 @@
         }
         
         .room-card h3 {
-            color: #667eea;
+            color: var(--accent);
             margin-bottom: 10px;
         }
         
@@ -485,9 +511,16 @@
         .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 25px;
-            border-radius: 15px;
+            padding: 24px;
+            border-radius: 16px;
             text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
         }
         
         .stat-card h3 {
@@ -498,6 +531,57 @@
         .stat-card p {
             font-size: 16px;
             opacity: 0.9;
+        }
+
+        .badge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 10px;
+        }
+
+        .badge-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .badge-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .badge-card[data-tone="accent"] .badge-icon {
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .badge-card[data-tone="success"] .badge-icon {
+            background: rgba(40, 167, 69, 0.15);
+        }
+
+        .badge-card[data-tone="gold"] .badge-icon {
+            background: rgba(255, 193, 7, 0.2);
+        }
+
+        .badge-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .badge-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
         }
     </style>
     {% block extra_css %}{% endblock %}
@@ -517,8 +601,7 @@
                         <div class="profile-dropdown" id="profileDropdown">
                             <div class="profile-btn" onclick="toggleDropdown()">
                                 <div class="profile-avatar">{{ user.username|slice:":1"|upper }}</div>
-                                <span class="profile-name">{{ user.username }}</span>
-                                <span class="dropdown-arrow">▼</span>
+                               
                             </div>
                             
                             <div class="dropdown-menu">
@@ -537,22 +620,25 @@
                                         </div>
                                         <div class="toggle-switch" id="themeToggle" onclick="toggleTheme()"></div>
                                     </div>
+                                    <div class="theme-toggle">
+                                        <div class="theme-toggle-label">
+                                            <span class="icon">🔊</span>
+                                            <span data-translate="sound">Ovoz</span>
+                                        </div>
+                                        <div class="toggle-switch" id="soundToggle" onclick="toggleSound()"></div>
+                                    </div>
                                 </div>
                                 
                                 <div class="dropdown-section">
                                     <div class="dropdown-section-title" data-translate="language">Til</div>
                                     <div class="language-options">
-                                        <button class="lang-btn active" onclick="setLanguage('uz')">🇺🇿 O'zbek</button>
-                                        <button class="lang-btn" onclick="setLanguage('en')">🇬🇧 English</button>
-                                        <button class="lang-btn" onclick="setLanguage('ja')">🇯🇵 日本語</button>
+                                        <button class="lang-btn active" data-lang="uz" onclick="setLanguage('uz')">UZ</button>
+                                        <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">EN</button>
+                                        <button class="lang-btn" data-lang="ja" onclick="setLanguage('ja')">JP</button>
                                     </div>
                                 </div>
                                 
                                 <div class="dropdown-section">
-                                    <a href="{% url 'statistics' %}" class="dropdown-item">
-                                        <span class="icon">⚙️</span>
-                                        <span data-translate="settings">Sozlamalar</span>
-                                    </a>
                                     <form action="{% url 'logout' %}" method="post" style="margin: 0;">
                                         {% csrf_token %}
                                         <button type="submit" class="dropdown-item logout-btn">
@@ -591,11 +677,62 @@
                 points: "ball",
                 appearance: "Ko'rinish",
                 dark_mode: "Qorong'i rejim",
+                sound: "Ovoz",
                 language: "Til",
-                settings: "Sozlamalar",
                 logout: "Chiqish",
                 login: "Kirish",
-                register: "Ro'yxatdan o'tish"
+                register: "Ro'yxatdan o'tish",
+                // Home page
+                welcome: "Xush kelibsiz",
+                total_score: "Jami ball",
+                completed_rooms: "Tugallangan xonalar",
+                completed_puzzles: "Tugallangan jumboqlar",
+                total_time: "Jami vaqt (soniya)",
+                rooms: "Xonalar",
+                puzzles_completed: "jumboq tugallangan",
+                view: "Ko'rish",
+                enter_room: "Xonaga kirish",
+                locked: "Qulflangan",
+                no_rooms: "Hozircha xonalar mavjud emas. Admin panel orqali xona qo'shing.",
+                achievements: "Yutuqlar",
+                no_badges: "Hozircha yutuqlar yo'q.",
+                daily_challenge: "Kunlik jumboq",
+                play_now: "Hozir o'ynash",
+                completed: "Tugallangan",
+                // Room page
+                puzzles: "Jumboqlar",
+                back_home: "Bosh sahifaga",
+                puzzle_list: "Jumboqlar ro'yxati",
+                solved: "Yechilgan",
+                not_solved: "Yechilmagan",
+                solve: "Yechish",
+                // Puzzle page
+                hint: "Maslahat",
+                your_answer: "Javobingiz",
+                submit: "Yuborish",
+                correct: "To'g'ri!",
+                wrong: "Noto'g'ri, qaytadan urinib ko'ring",
+                try_again: "Qayta urinish",
+                start: "Boshlash",
+                no_puzzles: "Bu xonada jumboqlar mavjud emas.",
+                back_to_room: "Xonaga qaytish",
+                attempts: "urinish",
+                puzzle_completed: "Bu jumboq tugallangan!",
+                time: "Vaqt",
+                question: "Savol",
+                enter_answer: "Javobingizni kiriting...",
+                submit_answer: "Javobni yuborish",
+                show_hint: "Maslahatni ko'rsatish",
+                tokens_left: "Tokenlar",
+                mission: "Vazifa",
+                // Statistics page
+                current_room: "Joriy xona:",
+                all_rooms_completed: "Barcha xonalar tugallandi!",
+                room_statistics: "Xonalar bo'yicha statistika",
+                no_statistics: "Hozircha statistika mavjud emas.",
+                recent_completed: "Oxirgi tugallangan jumboqlar",
+                leaderboard: "Leaderboard",
+                no_leaderboard: "Hozircha leaderboard yo'q."
             },
             en: {
                 home: "Home",
@@ -603,11 +740,62 @@
                 points: "points",
                 appearance: "Appearance",
                 dark_mode: "Dark mode",
+                sound: "Sound",
                 language: "Language",
-                settings: "Settings",
                 logout: "Logout",
                 login: "Login",
-                register: "Register"
+                register: "Register",
+                // Home page
+                welcome: "Welcome",
+                total_score: "Total Score",
+                completed_rooms: "Completed Rooms",
+                completed_puzzles: "Completed Puzzles",
+                total_time: "Total Time (seconds)",
+                rooms: "Rooms",
+                puzzles_completed: "puzzles completed",
+                view: "View",
+                enter_room: "Enter Room",
+                locked: "Locked",
+                no_rooms: "No rooms available yet. Add rooms through admin panel.",
+                achievements: "Achievements",
+                no_badges: "No achievements yet.",
+                daily_challenge: "Daily Challenge",
+                play_now: "Play Now",
+                completed: "Completed",
+                // Room page
+                puzzles: "Puzzles",
+                back_home: "Back to Home",
+                puzzle_list: "Puzzle List",
+                solved: "Solved",
+                not_solved: "Not Solved",
+                solve: "Solve",
+                // Puzzle page
+                hint: "Hint",
+                your_answer: "Your Answer",
+                submit: "Submit",
+                correct: "Correct!",
+                wrong: "Wrong, try again",
+                try_again: "Try Again",
+                start: "Start",
+                no_puzzles: "No puzzles in this room.",
+                back_to_room: "Back to Room",
+                attempts: "attempts",
+                puzzle_completed: "This puzzle is completed!",
+                time: "Time",
+                question: "Question",
+                enter_answer: "Enter your answer...",
+                submit_answer: "Submit Answer",
+                show_hint: "Show Hint",
+                tokens_left: "Tokens",
+                mission: "Mission",
+                // Statistics page
+                current_room: "Current Room:",
+                all_rooms_completed: "All rooms completed!",
+                room_statistics: "Room Statistics",
+                no_statistics: "No statistics available yet.",
+                recent_completed: "Recently Completed Puzzles",
+                leaderboard: "Leaderboard",
+                no_leaderboard: "No leaderboard yet."
             },
             ja: {
                 home: "ホーム",
@@ -615,11 +803,62 @@
                 points: "ポイント",
                 appearance: "外観",
                 dark_mode: "ダークモード",
+                sound: "サウンド",
                 language: "言語",
-                settings: "設定",
                 logout: "ログアウト",
                 login: "ログイン",
-                register: "登録"
+                register: "登録",
+                // Home page
+                welcome: "ようこそ",
+                total_score: "合計スコア",
+                completed_rooms: "クリアした部屋",
+                completed_puzzles: "解いたパズル",
+                total_time: "合計時間（秒）",
+                rooms: "部屋",
+                puzzles_completed: "パズル完了",
+                view: "見る",
+                enter_room: "部屋に入る",
+                locked: "ロック中",
+                no_rooms: "まだ部屋がありません。管理画面から追加してください。",
+                achievements: "実績",
+                no_badges: "まだ実績がありません。",
+                daily_challenge: "今日のパズル",
+                play_now: "今すぐプレイ",
+                completed: "完了",
+                // Room page
+                puzzles: "パズル",
+                back_home: "ホームへ戻る",
+                puzzle_list: "パズル一覧",
+                solved: "解決済み",
+                not_solved: "未解決",
+                solve: "解く",
+                // Puzzle page
+                hint: "ヒント",
+                your_answer: "あなたの答え",
+                submit: "送信",
+                correct: "正解！",
+                wrong: "不正解、もう一度試してください",
+                try_again: "再挑戦",
+                start: "開始",
+                no_puzzles: "この部屋にはパズルがありません。",
+                back_to_room: "部屋に戻る",
+                attempts: "回の試行",
+                puzzle_completed: "このパズルは完了しました！",
+                time: "時間",
+                question: "問題",
+                enter_answer: "答えを入力してください...",
+                submit_answer: "答えを送信",
+                show_hint: "ヒントを表示",
+                tokens_left: "トークン",
+                mission: "ミッション",
+                // Statistics page
+                current_room: "現在の部屋：",
+                all_rooms_completed: "すべての部屋が完了しました！",
+                room_statistics: "部屋別統計",
+                no_statistics: "まだ統計がありません。",
+                recent_completed: "最近完了したパズル",
+                leaderboard: "ランキング",
+                no_leaderboard: "まだランキングがありません。"
             }
         };
         
@@ -652,15 +891,53 @@
                 localStorage.setItem('theme', 'dark');
             }
         }
+
+        // Sound toggle
+        let soundEnabled = true;
+        let audioContext = null;
+
+        function toggleSound() {
+            const toggle = document.getElementById('soundToggle');
+            soundEnabled = !soundEnabled;
+            if (toggle) {
+                toggle.classList.toggle('active', soundEnabled);
+            }
+            localStorage.setItem('sound', soundEnabled ? 'on' : 'off');
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                oscillator.type = 'sine';
+                oscillator.frequency.value = type === 'success' ? 660 : 220;
+                gainNode.gain.value = 0.06;
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.15);
+            } catch (e) {
+                // Audio konteksti bloklangan bo'lishi mumkin
+            }
+        }
         
         // Load saved theme
         document.addEventListener('DOMContentLoaded', function() {
             const savedTheme = localStorage.getItem('theme') || 'light';
             const toggle = document.getElementById('themeToggle');
+            const soundToggle = document.getElementById('soundToggle');
             
             document.documentElement.setAttribute('data-theme', savedTheme);
             if (savedTheme === 'dark' && toggle) {
                 toggle.classList.add('active');
+            }
+
+            const savedSound = localStorage.getItem('sound') || 'on';
+            soundEnabled = savedSound === 'on';
+            if (soundToggle) {
+                soundToggle.classList.toggle('active', soundEnabled);
             }
             
             // Load saved language
@@ -671,8 +948,10 @@
         // Language switcher
         function setLanguage(lang, save = true) {
             const elements = document.querySelectorAll('[data-translate]');
+            const placeholders = document.querySelectorAll('[data-placeholder-translate]');
             const langBtns = document.querySelectorAll('.lang-btn');
             
+            // UI tarjimalarini yangilash
             elements.forEach(el => {
                 const key = el.getAttribute('data-translate');
                 if (translations[lang] && translations[lang][key]) {
@@ -680,15 +959,42 @@
                 }
             });
             
+            // Placeholder tarjimalari
+            placeholders.forEach(el => {
+                const key = el.getAttribute('data-placeholder-translate');
+                if (translations[lang] && translations[lang][key]) {
+                    el.placeholder = translations[lang][key];
+                }
+            });
+            
+            // Tugmalarni yangilash
             langBtns.forEach(btn => {
                 btn.classList.remove('active');
-                if (btn.textContent.includes(lang === 'uz' ? "O'zbek" : lang === 'en' ? 'English' : '日本語')) {
+                if (btn.getAttribute('data-lang') === lang) {
                     btn.classList.add('active');
                 }
             });
             
             if (save) {
                 localStorage.setItem('language', lang);
+                
+                // Backend ga tilni yuborish va sahifani yangilash
+                fetch('/set-language/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({ language: lang })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Sahifani yangilash (DB dan tarjima olish uchun)
+                        window.location.reload();
+                    }
+                })
+                .catch(err => console.error('Language switch error:', err));
             }
         }
     </script>

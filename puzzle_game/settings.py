@@ -27,6 +27,7 @@ LOGOUT_REDIRECT_URL = '/'
 # Application definition
 
 INSTALLED_APPS = [
+    'modeltranslation',  # Modellar tarjimasi uchun (game dan oldin bo'lishi kerak)
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,6 +42,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',  # Til uchun
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -103,13 +105,25 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'uz-uz'
+LANGUAGE_CODE = 'uz'
 
 TIME_ZONE = 'Asia/Tashkent'
 
 USE_I18N = True
 
 USE_TZ = True
+
+# Modeltranslation sozlamalari
+gettext = lambda s: s
+LANGUAGES = [
+    ('uz', gettext('O\'zbek')),
+    ('en', gettext('English')),
+    ('ja', gettext('日本語')),
+]
+
+MODELTRANSLATION_DEFAULT_LANGUAGE = 'uz'
+MODELTRANSLATION_LANGUAGES = ('uz', 'en', 'ja')
+MODELTRANSLATION_FALLBACK_LANGUAGES = ('uz', 'en')  # Tarjima yo'q bo'lsa, uz -> en ketma-ketlikda qidiradi
 
 
 # Static files (CSS, JavaScript, Images)

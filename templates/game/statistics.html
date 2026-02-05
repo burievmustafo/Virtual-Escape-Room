@@ -173,42 +173,63 @@
 
 {% block content %}
 <div class="card">
-    <a href="{% url 'home' %}" class="btn btn-secondary" style="margin-bottom: 20px;">← Orqaga</a>
+    <a href="{% url 'home' %}" class="btn btn-secondary" style="margin-bottom: 20px;">← <span data-translate="back_home">Bosh sahifaga</span></a>
     
-    <h2 style="color: #667eea; margin-bottom: 30px;">📊 Statistika</h2>
+    <h2 style="color: #667eea; margin-bottom: 30px;">📊 <span data-translate="statistics">Statistika</span></h2>
     
     <div class="stats-grid">
         <div class="stat-card">
             <h3>{{ stats.total_score|default:0 }}</h3>
-            <p>Jami ball</p>
+            <p data-translate="total_score">Jami ball</p>
         </div>
         <div class="stat-card">
             <h3>{{ stats.rooms_completed|default:0 }}</h3>
-            <p>Tugallangan xonalar</p>
+            <p data-translate="completed_rooms">Tugallangan xonalar</p>
         </div>
         <div class="stat-card">
             <h3>{{ stats.puzzles_completed|default:0 }}</h3>
-            <p>Tugallangan jumboqlar</p>
+            <p data-translate="completed_puzzles">Tugallangan jumboqlar</p>
         </div>
         <div class="stat-card">
             <h3>{{ stats.total_time|default:0|floatformat:0 }}</h3>
-            <p>Jami vaqt (soniya)</p>
+            <p data-translate="total_time">Jami vaqt (soniya)</p>
         </div>
     </div>
     
     {% if stats.current_room %}
         <div style="text-align: center; margin-top: 20px; padding: 15px; background: #e7f3ff; border-radius: 10px;">
-            <strong>Joriy xona:</strong> {{ stats.current_room.title }}
+            <strong data-translate="current_room">Joriy xona:</strong> {{ stats.current_room.title }}
         </div>
     {% else %}
         <div style="text-align: center; margin-top: 20px; padding: 15px; background: #d4edda; border-radius: 10px;">
-            <strong>🎉 Barcha xonalar tugallandi!</strong>
+            <strong>🎉 <span data-translate="all_rooms_completed">Barcha xonalar tugallandi!</span></strong>
         </div>
     {% endif %}
 </div>
 
 <div class="card">
-    <h3 style="color: #667eea; margin-bottom: 20px;">🎬 Reyting va o'rinlar</h3>
+    <h3 style="color: #667eea; margin-bottom: 16px;" data-translate="achievements">Yutuqlar</h3>
+    {% if badges %}
+        <div class="badge-grid">
+            {% for badge in badges %}
+                <div class="badge-card" data-tone="{{ badge.tone|default:'primary' }}">
+                    <div class="badge-icon">{{ badge.icon }}</div>
+                    <div>
+                        <div class="badge-title">{{ badge.title }}</div>
+                        <div class="badge-desc">{{ badge.desc }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p style="text-align: center; color: #666; padding: 10px;" data-translate="no_badges">
+            Hozircha yutuqlar yo'q.
+        </p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h3 style="color: #667eea; margin-bottom: 20px;" data-translate="leaderboard">Leaderboard</h3>
 
     <div class="leaderboard">
         {% for entry in leaderboard %}
@@ -228,12 +249,12 @@
                 </div>
                 <div class="leaderboard-score">
                     ⭐ {{ entry.total_score }}
-                    <small>jami ball</small>
+                    <small><span data-translate="points">ball</span></small>
                 </div>
             </div>
         {% empty %}
-            <p style="text-align: center; color: #666; padding: 40px;">
-                Hozircha reyting ma'lumotlari yo'q.
+            <p style="text-align: center; color: #666; padding: 40px;" data-translate="no_leaderboard">
+                Hozircha leaderboard yo'q.
             </p>
         {% endfor %}
     </div>
@@ -244,7 +265,7 @@
 </div>
 
 <div class="card">
-    <h3 style="color: #667eea; margin-bottom: 20px;">Xonalar bo'yicha statistika</h3>
+    <h3 style="color: #667eea; margin-bottom: 20px;" data-translate="room_statistics">Xonalar bo'yicha statistika</h3>
     
     <div style="display: grid; gap: 15px;">
         {% for room_stat in room_stats %}
@@ -261,12 +282,12 @@
                 </div>
                 
                 <div style="display: flex; gap: 20px; font-size: 14px; color: #666; margin-top: 10px;">
-                    <span>⭐ {{ room_stat.score }} ball</span>
+                    <span>⭐ {{ room_stat.score }} <span data-translate="points">ball</span></span>
                     <span>⏱️ {{ room_stat.time }}s</span>
                 </div>
             </div>
         {% empty %}
-            <p style="text-align: center; color: #666; padding: 40px;">
+            <p style="text-align: center; color: #666; padding: 40px;" data-translate="no_statistics">
                 Hozircha statistika mavjud emas.
             </p>
         {% endfor %}
@@ -275,7 +296,7 @@
 
 {% if completed_progress %}
 <div class="card">
-    <h3 style="color: #667eea; margin-bottom: 20px;">Oxirgi tugallangan jumboqlar</h3>
+    <h3 style="color: #667eea; margin-bottom: 20px;" data-translate="recent_completed">Oxirgi tugallangan jumboqlar</h3>
     
     <div style="display: grid; gap: 10px;">
         {% for progress in completed_progress %}
@@ -285,7 +306,7 @@
                     <small style="color: #666;">{{ progress.puzzle.room.title }}</small>
                 </div>
                 <div style="text-align: right;">
-                    <div>⭐ {{ progress.score }} ball</div>
+                    <div>⭐ {{ progress.score }} <span data-translate="points">ball</span></div>
                     <small style="color: #666;">⏱️ {{ progress.time_taken }}s</small>
                 </div>
             </div>

@@ -83,12 +83,12 @@
 {% block content %}
 <div class="puzzle-container">
     <div class="card">
-        <a href="{% url 'room' puzzle.room.id %}" class="btn btn-secondary" style="margin-bottom: 20px;">← Xonaga qaytish</a>
+        <a href="{% url 'room' puzzle.room.id %}" class="btn btn-secondary" style="margin-bottom: 20px;">← <span data-translate="back_to_room">Xonaga qaytish</span></a>
         
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h2 style="color: #667eea;">{{ puzzle.title }}</h2>
             <span style="background: #667eea; color: white; padding: 8px 16px; border-radius: 20px;">
-                {{ puzzle.points }} ball
+                {{ puzzle.points }} <span data-translate="points">ball</span>
             </span>
         </div>
         
@@ -96,7 +96,7 @@
             <span>📂 {{ puzzle.room.title }}</span>
             <span>🎯 {{ puzzle.get_puzzle_type_display }}</span>
             {% if progress.attempts > 0 %}
-                <span>🔄 {{ progress.attempts }} urinish</span>
+                <span>🔄 {{ progress.attempts }} <span data-translate="attempts">urinish</span></span>
             {% endif %}
         </div>
         
@@ -104,19 +104,34 @@
         
         {% if progress.is_completed %}
             <div class="result-message success">
-                ✅ Bu jumboq tugallangan!<br>
-                <small>Ball: {{ progress.score }} | Vaqt: {{ progress.time_taken }}s</small>
+                ✅ <span data-translate="puzzle_completed">Bu jumboq tugallangan!</span><br>
+                <small><span data-translate="points">Ball</span>: {{ progress.score }} | <span data-translate="time">Vaqt</span>: {{ progress.time_taken }}s</small>
             </div>
         {% endif %}
         
         <div class="puzzle-question">
-            <h3>Savol:</h3>
+            <h3 data-translate="question">Savol:</h3>
             <p style="font-size: 18px; line-height: 1.6; white-space: pre-line;">{{ puzzle.question }}</p>
         </div>
         
         {% if puzzle.hint %}
-            <div class="hint-section">
-                <strong>💡 Maslahat:</strong> {{ puzzle.hint }}
+            <div class="hint-section" id="hint-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <strong>💡 <span data-translate="hint">Maslahat</span></strong>
+                    <small style="color: #856404;">
+                        <span data-translate="tokens_left">Tokenlar</span>: <span id="tokens-left">{{ hint_tokens }}</span>
+                    </small>
+                </div>
+                <div id="hint-content" style="margin-top: 8px;">
+                    {% if progress.used_hint %}
+                        <span>{{ puzzle.hint }}</span>
+                    {% else %}
+                        <button id="show-hint-btn" class="btn btn-secondary" type="button" data-translate="show_hint" style="margin-top: 8px;">
+                            Maslahatni ko'rsatish
+                        </button>
+                        <div id="hint-message" style="margin-top: 8px; color: #856404;"></div>
+                    {% endif %}
+                </div>
             </div>
         {% endif %}
         
@@ -125,9 +140,10 @@
                 <input type="text" 
                        id="answer-input" 
                        class="answer-input" 
+                       data-placeholder-translate="enter_answer"
                        placeholder="Javobingizni kiriting..."
                        autocomplete="off">
-                <button id="submit-btn" class="btn" style="width: 100%;">Javobni yuborish</button>
+                <button id="submit-btn" class="btn" style="width: 100%;" data-translate="submit_answer">Javobni yuborish</button>
             </div>
         {% endif %}
         
@@ -170,6 +186,46 @@
                 e.preventDefault();
                 if (window.submitAnswer) {
                     window.submitAnswer();
+                }
+            });
+        }
+
+        // Maslahatni ko'rsatish
+        const showHintBtn = document.getElementById('show-hint-btn');
+        if (showHintBtn) {
+            showHintBtn.addEventListener('click', async function() {
+                const csrftoken = getCSRFToken();
+                if (!csrftoken) {
+                    return;
+                }
+
+                const hintMessage = document.getElementById('hint-message');
+                try {
+                    const response = await fetch(`/api/use-hint/{{ puzzle.id }}/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({})
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        const hintContent = document.getElementById('hint-content');
+                        hintContent.innerHTML = `<span>${data.hint}</span>`;
+                        const tokensLeft = document.getElementById('tokens-left');
+                        if (tokensLeft) {
+                            tokensLeft.textContent = data.tokens_left;
+                        }
+                    } else if (hintMessage) {
+                        hintMessage.textContent = data.message || '';
+                    }
+                } catch (err) {
+                    if (hintMessage) {
+                        hintMessage.textContent = 'Xatolik yuz berdi';
+                    }
                 }
             });
         }
@@ -268,6 +324,9 @@
             
             if (data.success) {
                 if (data.correct) {
+                    if (window.playSound) {
+                        window.playSound('success');
+                    }
                     clearInterval(timerInterval);
                     resultDiv.innerHTML = `
                         <div class="result-message success">
@@ -296,6 +355,9 @@
                         }
                     }, 2000);
                 } else {
+                    if (window.playSound) {
+                        window.playSound('error');
+                    }
                     resultDiv.innerHTML = `
                         <div class="result-message error">
                             ❌ ${data.message}<br>

@@ -10,6 +10,7 @@ urlpatterns = [
     path('room/<int:room_id>/', views.room_view, name='room'),
     path('puzzle/<int:puzzle_id>/', views.puzzle_view, name='puzzle'),
     path('statistics/', views.statistics_view, name='statistics'),
+    path('set-language/', views.set_language, name='set_language'),
 ]
 
 

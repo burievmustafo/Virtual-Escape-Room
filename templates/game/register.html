@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <title>Ro'yxatdan o'tish - Jumboq O'yini</title>
     <style>
         * {
@@ -36,6 +37,29 @@
         .register-header {
             text-align: center;
             margin-bottom: 35px;
+        }
+
+        .lang-switcher {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .lang-btn {
+            padding: 6px 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f8f9fa;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .lang-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
         }
         
         .register-header .logo {
@@ -150,9 +174,14 @@
     <div class="register-container">
         <div class="register-card">
             <div class="register-header">
+                <div class="lang-switcher">
+                    <button class="lang-btn active" data-lang="uz" onclick="setLanguage('uz')">🇺🇿</button>
+                    <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧</button>
+                    <button class="lang-btn" data-lang="ja" onclick="setLanguage('ja')">🇯🇵</button>
+                </div>
                 <div class="logo">🧩</div>
-                <h1>Ro'yxatdan o'tish</h1>
-                <p>Yangi hisob yarating</p>
+                <h1 data-translate="register_title">Ro'yxatdan o'tish</h1>
+                <p data-translate="register_subtitle">Yangi hisob yarating</p>
             </div>
             
             {% if messages %}
@@ -164,8 +193,8 @@
             <form method="post">
                 {% csrf_token %}
                 <div class="form-group">
-                    <label for="id_username">Foydalanuvchi nomi</label>
-                    <input type="text" id="id_username" name="username" placeholder="Username kiriting" required autofocus 
+                    <label for="id_username" data-translate="username">Foydalanuvchi nomi</label>
+                    <input type="text" id="id_username" name="username" data-placeholder-translate="username_ph" placeholder="Username kiriting" required autofocus 
                            value="{{ form.username.value|default:'' }}">
                     {% if form.username.errors %}
                         <div class="error-text">{{ form.username.errors.0 }}</div>
@@ -173,29 +202,120 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="id_password1">Parol</label>
-                    <input type="password" id="id_password1" name="password1" placeholder="Parol kiriting" required>
+                    <label for="id_password1" data-translate="password">Parol</label>
+                    <input type="password" id="id_password1" name="password1" data-placeholder-translate="password_ph" placeholder="Parol kiriting" required>
                     {% if form.password1.errors %}
                         <div class="error-text">{{ form.password1.errors.0 }}</div>
                     {% endif %}
                 </div>
                 
                 <div class="form-group">
-                    <label for="id_password2">Parolni tasdiqlang</label>
-                    <input type="password" id="id_password2" name="password2" placeholder="Parolni qayta kiriting" required>
+                    <label for="id_password2" data-translate="password_confirm">Parolni tasdiqlang</label>
+                    <input type="password" id="id_password2" name="password2" data-placeholder-translate="password_confirm_ph" placeholder="Parolni qayta kiriting" required>
                     {% if form.password2.errors %}
                         <div class="error-text">{{ form.password2.errors.0 }}</div>
                     {% endif %}
                 </div>
                 
-                <button type="submit" class="btn-register">Ro'yxatdan o'tish</button>
+                <button type="submit" class="btn-register" data-translate="register_btn">Ro'yxatdan o'tish</button>
             </form>
             
             <div class="register-footer">
-                <p>Allaqachon hisobingiz bormi? <a href="{% url 'login' %}">Kirish</a></p>
+                <p><span data-translate="have_account">Allaqachon hisobingiz bormi?</span> <a href="{% url 'login' %}" data-translate="login">Kirish</a></p>
             </div>
         </div>
     </div>
+
+    <script>
+        const translations = {
+            uz: {
+                register_title: "Ro'yxatdan o'tish",
+                register_subtitle: "Yangi hisob yarating",
+                username: "Foydalanuvchi nomi",
+                password: "Parol",
+                password_confirm: "Parolni tasdiqlang",
+                register_btn: "Ro'yxatdan o'tish",
+                have_account: "Allaqachon hisobingiz bormi?",
+                login: "Kirish",
+                username_ph: "Username kiriting",
+                password_ph: "Parol kiriting",
+                password_confirm_ph: "Parolni qayta kiriting"
+            },
+            en: {
+                register_title: "Register",
+                register_subtitle: "Create a new account",
+                username: "Username",
+                password: "Password",
+                password_confirm: "Confirm Password",
+                register_btn: "Register",
+                have_account: "Already have an account?",
+                login: "Login",
+                username_ph: "Enter your username",
+                password_ph: "Enter your password",
+                password_confirm_ph: "Re-enter your password"
+            },
+            ja: {
+                register_title: "登録",
+                register_subtitle: "新しいアカウントを作成",
+                username: "ユーザー名",
+                password: "パスワード",
+                password_confirm: "パスワード確認",
+                register_btn: "登録",
+                have_account: "すでにアカウントをお持ちですか？",
+                login: "ログイン",
+                username_ph: "ユーザー名を入力",
+                password_ph: "パスワードを入力",
+                password_confirm_ph: "パスワードを再入力"
+            }
+        };
+
+        function setLanguage(lang, save = true) {
+            const elements = document.querySelectorAll('[data-translate]');
+            const placeholders = document.querySelectorAll('[data-placeholder-translate]');
+            const langBtns = document.querySelectorAll('.lang-btn');
+
+            elements.forEach(el => {
+                const key = el.getAttribute('data-translate');
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+
+            placeholders.forEach(el => {
+                const key = el.getAttribute('data-placeholder-translate');
+                if (translations[lang] && translations[lang][key]) {
+                    el.placeholder = translations[lang][key];
+                }
+            });
+
+            langBtns.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-lang') === lang) {
+                    btn.classList.add('active');
+                }
+            });
+
+            if (save) {
+                localStorage.setItem('language', lang);
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+                if (csrf) {
+                    fetch('/set-language/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrf
+                        },
+                        body: JSON.stringify({ language: lang })
+                    }).catch(() => {});
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedLang = localStorage.getItem('language') || 'uz';
+            setLanguage(savedLang, false);
+        });
+    </script>
 </body>
 </html>
 

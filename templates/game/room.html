@@ -4,12 +4,16 @@
 
 {% block content %}
 <div class="card">
-    <a href="{% url 'home' %}" class="btn btn-secondary" style="margin-bottom: 20px;">← Orqaga</a>
+    <a href="{% url 'home' %}" class="btn btn-secondary" style="margin-bottom: 20px;">← <span data-translate="back_home">Bosh sahifaga</span></a>
     
     <h2 style="color: #667eea; margin-bottom: 10px;">{{ room.order }}. {{ room.title }}</h2>
     <p style="color: #666; margin-bottom: 30px;">{{ room.description }}</p>
+
+    <div class="story-banner">
+        📜 <strong data-translate="mission">Vazifa</strong>: {{ room.description }}
+    </div>
     
-    <h3 style="margin-bottom: 20px;">Jumboqlar:</h3>
+    <h3 style="margin-bottom: 20px;" data-translate="puzzles">Jumboqlar</h3>
     
     <div style="display: grid; gap: 15px;">
         {% for puzzle_data in puzzles %}
@@ -26,23 +30,23 @@
                             {{ puzzle_data.puzzle.description|truncatewords:20 }}
                         </p>
                         <div style="display: flex; gap: 20px; font-size: 14px; color: #666;">
-                            <span>📊 {{ puzzle_data.puzzle.points }} ball</span>
+                            <span>📊 {{ puzzle_data.puzzle.points }} <span data-translate="points">ball</span></span>
                             <span>🎯 {{ puzzle_data.puzzle.get_puzzle_type_display }}</span>
                             {% if puzzle_data.progress.is_completed %}
-                                <span>⭐ {{ puzzle_data.progress.score }} ball olindi</span>
+                                <span>⭐ {{ puzzle_data.progress.score }} <span data-translate="points">ball</span></span>
                                 <span>⏱️ {{ puzzle_data.progress.time_taken }}s</span>
                             {% endif %}
                         </div>
                     </div>
                     <div>
                         {% if puzzle_data.progress.is_completed %}
-                            <span class="btn btn-success" style="cursor: default;">Tugallangan</span>
+                            <span class="btn btn-success" style="cursor: default;" data-translate="solved">Tugallangan</span>
                         {% else %}
                             <a href="{% url 'puzzle' puzzle_data.puzzle.id %}" class="btn">
                                 {% if puzzle_data.progress.attempts > 0 %}
-                                    Qayta urinish
+                                    <span data-translate="try_again">Qayta urinish</span>
                                 {% else %}
-                                    Boshlash
+                                    <span data-translate="start">Boshlash</span>
                                 {% endif %}
                             </a>
                         {% endif %}
@@ -50,7 +54,7 @@
                 </div>
             </div>
         {% empty %}
-            <p style="text-align: center; color: #666; padding: 40px;">
+            <p style="text-align: center; color: #666; padding: 40px;" data-translate="no_puzzles">
                 Bu xonada jumboqlar mavjud emas.
             </p>
         {% endfor %}

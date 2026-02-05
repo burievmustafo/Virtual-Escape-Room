@@ -6,12 +6,80 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import ensure_csrf_cookie
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.db.models import Sum, Q
 from datetime import datetime
 import json
 
 from .models import Room, Puzzle, UserProgress, UserStatistics
+
+
+def get_user_badges(user):
+    """Foydalanuvchi yutuqlarini hisoblash"""
+    stats, _ = UserStatistics.objects.get_or_create(user=user)
+    completed = UserProgress.objects.filter(user=user, is_completed=True)
+    fastest = completed.order_by('time_taken').first()
+    total_completed = completed.count()
+    total_time = completed.aggregate(total=Sum('time_taken'))['total'] or 0
+    lang = translation.get_language() or 'uz'
+
+    def t(uz, en, ja):
+        return {'uz': uz, 'en': en, 'ja': ja}.get(lang, uz)
+
+    badges = []
+
+    if total_completed >= 1:
+        badges.append({
+            'icon': '🧩',
+            'title': t('Boshlovchi', 'Beginner', '初心者'),
+            'desc': t("Birinchi jumboqni yechdingiz", 'Solved your first puzzle', '最初のパズルを解いた'),
+            'tone': 'primary',
+        })
+
+    if fastest and fastest.time_taken <= 30:
+        badges.append({
+            'icon': '⚡',
+            'title': t('Tezkor', 'Speedster', 'スピードスター'),
+            'desc': t('30 soniyadan kam vaqtda yechildi', 'Solved under 30 seconds', '30秒以内に解決'),
+            'tone': 'accent',
+        })
+
+    if stats.rooms_completed >= 2:
+        badges.append({
+            'icon': '🗺️',
+            'title': t('Tadqiqotchi', 'Explorer', '探検家'),
+            'desc': t('Kamida 2 ta xona tugallandi', 'Completed at least 2 rooms', '2つ以上の部屋を完了'),
+            'tone': 'success',
+        })
+
+    if stats.total_score >= 200:
+        badges.append({
+            'icon': '🏆',
+            'title': t('Ustoz', 'Master', 'マスター'),
+            'desc': t('200+ ball yig\'dingiz', 'Scored 200+ points', '200点以上を獲得'),
+            'tone': 'gold',
+        })
+
+    if total_time >= 600:
+        badges.append({
+            'icon': '⏱️',
+            'title': t('Marafon', 'Marathon', 'マラソン'),
+            'desc': t('10+ daqiqa o\'ynadingiz', 'Played for 10+ minutes', '10分以上プレイ'),
+            'tone': 'neutral',
+        })
+
+    return badges
+
+
+def get_daily_puzzle(user):
+    """Kunlik jumboqni aniqlash (deterministik)"""
+    puzzles = list(Puzzle.objects.all().order_by('id'))
+    if not puzzles:
+        return None, False
+    today_index = timezone.localdate().toordinal() % len(puzzles)
+    puzzle = puzzles[today_index]
+    completed = UserProgress.objects.filter(user=user, puzzle=puzzle, is_completed=True).exists()
+    return puzzle, completed
 
 
 def register_view(request):
@@ -91,9 +159,14 @@ def home_view(request):
             'progress_percent': int((completed_count / total_count * 100)) if total_count > 0 else 0
         })
     
+    daily_puzzle, daily_completed = get_daily_puzzle(request.user)
+
     context = {
         'stats': stats,
         'rooms': progress_data,
+        'badges': get_user_badges(request.user),
+        'daily_puzzle': daily_puzzle,
+        'daily_completed': daily_completed,
     }
     return render(request, 'game/home.html', context)
 
@@ -170,10 +243,14 @@ def puzzle_view(request, puzzle_id):
     # JavaScript uchun timestamp
     start_timestamp = int(start_time.timestamp()) if start_time else 0
     
+    stats, _ = UserStatistics.objects.get_or_create(user=request.user)
+    stats.ensure_hint_tokens()
+
     context = {
         'puzzle': puzzle,
         'progress': progress,
         'start_time': start_timestamp,
+        'hint_tokens': stats.hint_tokens,
     }
     return render(request, 'game/puzzle.html', context)
 
@@ -294,7 +371,7 @@ def statistics_view(request):
             'score': room_score,
             'time': room_time,
         })
-    
+
     leaderboard = UserStatistics.objects.select_related('user').order_by(
         '-total_score', 'total_time', 'user__username'
     )[:10]
@@ -309,8 +386,72 @@ def statistics_view(request):
         'stats': stats,
         'completed_progress': completed_progress[:20],  # Oxirgi 20 ta
         'room_stats': room_stats,
+        'badges': get_user_badges(request.user),
         'leaderboard': leaderboard,
         'current_rank': higher_rank_count + 1,
     }
     return render(request, 'game/statistics.html', context)
+
+
+@require_http_methods(["POST"])
+def set_language(request):
+    """Tilni o'zgartirish"""
+    from django.utils import translation
+    
+    data = json.loads(request.body)
+    lang_code = data.get('language', 'uz')
+    
+    if lang_code in ['uz', 'en', 'ja']:
+        translation.activate(lang_code)
+        request.session['django_language'] = lang_code
+        response = JsonResponse({'success': True, 'language': lang_code})
+        response.set_cookie('django_language', lang_code, max_age=365*24*60*60)
+        return response
+    
+    return JsonResponse({'success': False, 'message': 'Invalid language'})
+
+
+@login_required
+@require_http_methods(["POST"])
+def use_hint(request, puzzle_id):
+    """Maslahat tokenidan foydalanish"""
+    try:
+        puzzle = Puzzle.objects.get(id=puzzle_id)
+    except Puzzle.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Jumboq topilmadi'})
+
+    progress, _ = UserProgress.objects.get_or_create(
+        user=request.user,
+        puzzle=puzzle,
+        defaults={'room': puzzle.room, 'started_at': timezone.now()}
+    )
+
+    if not puzzle.hint:
+        return JsonResponse({'success': False, 'message': 'Maslahat mavjud emas'})
+
+    stats, _ = UserStatistics.objects.get_or_create(user=request.user)
+    stats.ensure_hint_tokens()
+
+    if progress.used_hint:
+        return JsonResponse({
+            'success': True,
+            'hint': puzzle.hint,
+            'tokens_left': stats.hint_tokens,
+            'already_used': True,
+        })
+
+    if stats.hint_tokens <= 0:
+        return JsonResponse({'success': False, 'message': 'Token qolmadi'})
+
+    stats.hint_tokens -= 1
+    stats.save(update_fields=['hint_tokens'])
+    progress.used_hint = True
+    progress.save(update_fields=['used_hint'])
+
+    return JsonResponse({
+        'success': True,
+        'hint': puzzle.hint,
+        'tokens_left': stats.hint_tokens,
+        'already_used': False,
+    })
 
