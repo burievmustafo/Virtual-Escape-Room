@@ -1,0 +1,641 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Virtual Escape Room{% endblock %}
+
+{% block content %}
+<style>
+    .dashboard-container {
+        padding: 0;
+        max-width: 100%;
+        background: #f5f7fa;
+        min-height: 100vh;
+    }
+    
+    .dashboard-layout {
+        padding: 32px;
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+    
+    .dashboard-header {
+        margin-bottom: 32px;
+    }
+    
+    .dashboard-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 4px;
+    }
+    
+    .dashboard-subtitle {
+        font-size: 14px;
+        color: #95a5a6;
+    }
+    
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(240px, 1fr));
+        gap: 24px;
+        margin-bottom: 28px;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 18px;
+        padding: 44px 24px 20px;
+        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
+        border: none;
+        position: relative;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-icon {
+        width: 58px;
+        height: 58px;
+        border-radius: 16px;
+        display: grid;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        position: absolute;
+        top: -14px;
+        left: 18px;
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.2);
+    }
+    
+    .stat-icon.black {
+        background: #2c3e50;
+    }
+    
+    .stat-icon.blue {
+        background: #3498db;
+    }
+    
+    .stat-icon.green {
+        background: #2ecc71;
+    }
+    
+    .stat-icon.pink {
+        background: #e91e63;
+    }
+    
+    .stat-info {
+        width: 100%;
+    }
+    
+    .stat-label {
+        font-size: 14px;
+        color: #9aa4b2;
+        margin-bottom: 6px;
+        font-weight: 600;
+    }
+    
+    .stat-value {
+        font-size: 34px;
+        font-weight: 700;
+        color: #2c3e50;
+        line-height: 1;
+        margin-bottom: 16px;
+    }
+    
+    .stat-change {
+        font-size: 14px;
+        font-weight: 600;
+        color: #2ecc71;
+        border-top: 1px solid #edf1f5;
+        padding-top: 12px;
+    }
+    
+    .stat-change.neutral {
+        color: #95a5a6;
+    }
+    
+    /* Chart Cards */
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(300px, 1fr));
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+    
+    .chart-card {
+        border-radius: 20px;
+        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 380px;
+    }
+    
+    .chart-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 28px rgba(0, 0, 0, 0.12);
+    }
+
+    .chart-card.blue-chart {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .chart-card.green-chart {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    }
+
+    .chart-card.dark-chart {
+        background: linear-gradient(135deg, #2c3e50 0%, #485563 100%);
+    }
+
+    .chart-header {
+        margin-bottom: 20px;
+        color: white;
+    }
+
+    .chart-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .chart-subtitle {
+        font-size: 14px;
+        opacity: 0.8;
+    }
+
+    .chart-main {
+        flex: 1;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-around;
+        padding: 20px 0 10px;
+        min-height: 200px;
+    }
+
+    .chart-bar-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+    }
+
+    .chart-bar {
+        width: 14px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 6px;
+        height: 10px;
+        transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        cursor: pointer;
+    }
+
+    .chart-bar:hover {
+        background: white;
+        transform: scaleX(1.4);
+    }
+
+    .chart-bar-label {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .chart-footer {
+        padding-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .chart-footer-icon {
+        font-size: 16px;
+    }
+    
+    /* Bottom Grid */
+    .bottom-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+    }
+    
+    .table-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+    
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .card-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+    
+    .card-subtitle {
+        font-size: 13px;
+        color: #2ecc71;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .table-container {
+        overflow-x: auto;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    th {
+        text-align: left;
+        font-size: 11px;
+        color: #95a5a6;
+        font-weight: 600;
+        text-transform: uppercase;
+        padding-bottom: 16px;
+        letter-spacing: 0.5px;
+    }
+    
+    td {
+        padding: 16px 8px;
+        border-bottom: 1px solid #ecf0f1;
+        font-size: 14px;
+        color: #2c3e50;
+    }
+    
+    tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .player-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .player-avatar-sm {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+    }
+    
+    .progress-bar-container {
+        width: 100%;
+        height: 6px;
+        background: #ecf0f1;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3498db 0%, #5dade2 100%);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+    }
+    
+    .activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .activity-item-new {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+    }
+    
+    .activity-icon-new {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+    
+    .activity-icon-new.green-bg {
+        background: #d5f4e6;
+        color: #2ecc71;
+    }
+    
+    .activity-icon-new.red-bg {
+        background: #fadbd8;
+        color: #e74c3c;
+    }
+    
+    .activity-info {
+        flex: 1;
+    }
+    
+    .activity-title-new {
+        font-size: 14px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 4px;
+    }
+    
+    .activity-time-new {
+        font-size: 12px;
+        color: #95a5a6;
+    }
+    
+    @media (max-width: 1200px) {
+        .bottom-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .dashboard-layout {
+            padding: 20px;
+        }
+    }
+</style>
+
+<div class="dashboard-container">
+    <div class="dashboard-layout">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <h1 class="dashboard-title" data-translate="dashboard">Dashboard</h1>
+        </div>
+        
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon black">
+                    <span style="color: white;">📚</span>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label" data-translate="rooms">Xonalar</div>
+                    <div class="stat-value">{{ total_stats.total_rooms }}</div>
+                    <div class="stat-change neutral" data-translate="active_rooms">Faol xonalar</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <span style="color: white;">👥</span>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label" data-translate="players">O'yinchilar</div>
+                    <div class="stat-value">{{ total_stats.total_users }}</div>
+                    <div class="stat-change">+12% <span data-translate="this_month">bu oy</span></div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <span style="color: white;">🧩</span>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label" data-translate="puzzles">Jumboqlar</div>
+                    <div class="stat-value">{{ total_stats.total_puzzles }}</div>
+                    <div class="stat-change">+5% <span data-translate="yesterday">kecha</span></div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon pink">
+                    <span style="color: white;">✅</span>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label" data-translate="solved">Yechilgan</div>
+                    <div class="stat-value">{{ total_stats.total_completed }}</div>
+                    <div class="stat-change neutral" data-translate="updated">Yangilandi</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-card blue-chart">
+                <div class="chart-header">
+                    <div class="chart-title" data-translate="weekly_activity">Haftalik Faoliyat</div>
+                    <div class="chart-subtitle" data-translate="last_7_days">So'nggi 7 kun</div>
+                </div>
+                <div class="chart-main">
+                    {% for bar in weekly_bars.bars %}
+                        <div class="chart-bar-container">
+                            <div class="chart-bar" data-height="{{ bar.height }}" title="{{ bar.label }}: {{ bar.count }} ta"></div>
+                            <div class="chart-bar-label">{{ bar.label }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="chart-footer">
+                    <span class="chart-footer-icon">⏱</span> <span data-translate="last_7_days">So'nggi 7 kun</span>: {{ weekly_total }} <span data-translate="unit_ta">ta</span>
+                </div>
+            </div>
+            
+            <div class="chart-card green-chart">
+                <div class="chart-header">
+                    <div class="chart-title" data-translate="monthly_statistics">Oylik Statistika</div>
+                    <div class="chart-subtitle" data-translate="last_7_weeks">So'nggi 7 hafta</div>
+                </div>
+                <div class="chart-main">
+                    {% for bar in monthly_bars.bars %}
+                        <div class="chart-bar-container">
+                            <div class="chart-bar" data-height="{{ bar.height }}" title="{{ bar.label }}: {{ bar.count }} ta"></div>
+                            <div class="chart-bar-label">{{ bar.label }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="chart-footer">
+                    <span class="chart-footer-icon">⏱</span> <span data-translate="last_7_weeks">So'nggi 7 hafta</span>: {{ monthly_total }} <span data-translate="unit_ta">ta</span>
+                </div>
+            </div>
+            
+            <div class="chart-card dark-chart">
+                <div class="chart-header">
+                    <div class="chart-title" data-translate="completed_tasks">Tugallangan Vazifalar</div>
+                    <div class="chart-subtitle" data-translate="by_rooms">Xonalar bo'yicha</div>
+                </div>
+                <div class="chart-main">
+                    {% for bar in room_bars.bars %}
+                        <div class="chart-bar-container">
+                            <div class="chart-bar" data-height="{{ bar.height }}" title="Xona {{ bar.label }}: {{ bar.count }} ta"></div>
+                            <div class="chart-bar-label">{{ bar.label }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="chart-footer">
+                    <span class="chart-footer-icon">⏱</span> <span data-translate="total_solutions">Jami yechimlar</span>: {{ room_total }} <span data-translate="unit_ta">ta</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Grid -->
+        <div class="bottom-grid">
+            <!-- Projects Table -->
+            <div class="table-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title" data-translate="top_players">Top O'yinchilar</div>
+                        <div class="card-subtitle" style="margin-top: 4px;">✓ {{ top_players|length }} <span data-translate="active_players">faol o'yinchi</span></div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>O'YINCHI</th>
+                                <th>BALLAR</th>
+                                <th>JUMBOQLAR</th>
+                                <th>PROGRESS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in top_players %}
+                            <tr>
+                                <td>
+                                    <div class="player-cell">
+                                        <div class="player-avatar-sm">{{ item.user.username|slice:":1"|upper }}</div>
+                                        <span style="font-weight: 600;">{{ item.user.username }}</span>
+                                    </div>
+                                </td>
+                                <td style="font-weight: 600;">{{ item.stats.total_score }} 🏆</td>
+                                <td>{{ item.completed_count }} ta</td>
+                                <td style="width: 150px;">
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar-fill" data-progress="{{ item.progress_percent }}"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Orders Overview -->
+            <div class="table-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title" data-translate="recent_activity">So'nggi Faoliyat</div>
+                        <div class="card-subtitle" style="margin-top: 4px;">↗ 24% <span data-translate="this_month">bu oy</span></div>
+                    </div>
+                </div>
+                <div class="activity-list">
+                    {% for activity in recent_activities|slice:":4" %}
+                    <div class="activity-item-new">
+                        <div class="activity-icon-new green-bg">
+                            ✓
+                        </div>
+                        <div class="activity-info">
+                            <div class="activity-title-new">{{ activity.puzzle.title }}</div>
+                            <div class="activity-time-new">{{ activity.completed_at|date:"d M, H:i" }}</div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="activity-item-new">
+                        <div class="activity-icon-new red-bg">
+                            !
+                        </div>
+                        <div class="activity-info">
+                            <div class="activity-title-new">Faoliyat yo'q</div>
+                            <div class="activity-time-new">Hozircha ma'lumot yo'q</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="table-card" style="margin-top: 24px;">
+            <div class="card-header">
+                <div>
+                    <div class="card-title" data-translate="room_statistics">Xonalar bo'yicha statistika</div>
+                    <div class="card-subtitle" style="margin-top: 4px;">✓ <span data-translate="active_rooms">Faol xonalar</span></div>
+                </div>
+            </div>
+
+            <div style="display: grid; gap: 15px;">
+                {% for room_stat in room_stats %}
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h4 style="color: #667eea;">{{ room_stat.room.order }}. {{ room_stat.room.title }}</h4>
+                            <span style="background: #667eea; color: white; padding: 5px 12px; border-radius: 15px;">
+                                {{ room_stat.completed }}/{{ room_stat.total }}
+                            </span>
+                        </div>
+
+                        <div class="progress-bar" style="margin: 10px 0;">
+                            <div class="progress-fill" data-progress="{{ room_stat.progress_percent }}"></div>
+                        </div>
+
+                        <div style="display: flex; gap: 20px; font-size: 14px; color: #666; margin-top: 10px;">
+                            <span>⭐ {{ room_stat.score }} <span data-translate="points">ball</span></span>
+                            <span>⏱️ {{ room_stat.time }}<span data-translate="unit_s">s</span></span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p style="text-align: center; color: #666; padding: 40px;" data-translate="no_statistics">
+                        Hozircha statistika mavjud emas.
+                    </p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.progress-bar-fill[data-progress]').forEach(bar => {
+            const width = parseFloat(bar.dataset.progress || '5');
+            bar.style.width = `${Math.max(width, 5)}%`;
+        });
+
+        document.querySelectorAll('.chart-bar[data-height]').forEach((bar, index) => {
+            const raw = parseFloat(bar.dataset.height || '6');
+            const minHeight = 10;
+            const maxHeight = 160;
+            // Scale based on the data
+            const scaled = Math.min(maxHeight, Math.max(minHeight, (raw / 10) * maxHeight));
+            
+            setTimeout(() => {
+                bar.style.height = `${scaled}px`;
+            }, index * 50);
+        });
+    });
+</script>
+{% endblock %}

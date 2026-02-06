@@ -7,8 +7,10 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils import timezone, translation
-from django.db.models import Sum, Q
-from datetime import datetime
+from django.db.models import Sum, Q, Count, Avg
+from django.contrib.auth.models import User
+from datetime import timedelta
+import math
 import json
 
 from .models import Room, Puzzle, UserProgress, UserStatistics
@@ -137,7 +139,6 @@ def home_view(request):
         ).count()
         total_count = room_puzzles.count()
         is_locked = False
-        
         # Oldingi xona tugallanganligini tekshirish
         if room.order > 1:
             prev_room = Room.objects.filter(order=room.order - 1, is_active=True).first()
@@ -160,6 +161,14 @@ def home_view(request):
         })
     
     daily_puzzle, daily_completed = get_daily_puzzle(request.user)
+    leaderboard = UserStatistics.objects.select_related('user').order_by(
+        '-total_score', 'total_time', 'user__username'
+    )[:10]
+    higher_rank_count = UserStatistics.objects.filter(
+        Q(total_score__gt=stats.total_score) |
+        Q(total_score=stats.total_score, total_time__lt=stats.total_time) |
+        Q(total_score=stats.total_score, total_time=stats.total_time, user__username__lt=request.user.username)
+    ).count()
 
     context = {
         'stats': stats,
@@ -167,6 +176,8 @@ def home_view(request):
         'badges': get_user_badges(request.user),
         'daily_puzzle': daily_puzzle,
         'daily_completed': daily_completed,
+        'leaderboard': leaderboard,
+        'current_rank': higher_rank_count + 1,
     }
     return render(request, 'game/home.html', context)
 
@@ -339,6 +350,186 @@ def submit_answer(request, puzzle_id):
             'success': False,
             'message': 'Bu jumboq allaqachon tugallangan',
         })
+
+
+@login_required
+@login_required
+def dashboard_view(request):
+    """Dashboard - barcha o'yinchilar statistikasi"""
+    # Barcha o'yinchilar ro'yxati
+    all_users = User.objects.all().order_by('-date_joined')
+    
+    # Barcha o'yinchilar statistikasi
+    user_stats = []
+    for user in all_users:
+        stats, _ = UserStatistics.objects.get_or_create(user=user)
+        completed = UserProgress.objects.filter(user=user, is_completed=True)
+        user_stats.append({
+            'user': user,
+            'stats': stats,
+            'completed_count': completed.count(),
+            'avg_time': completed.aggregate(avg=Avg('time_taken'))['avg'] or 0,
+        })
+    
+    # Top o'yinchilar
+    top_players = sorted(user_stats, key=lambda x: x['stats'].total_score, reverse=True)[:5]
+    max_top_score = max((item['stats'].total_score for item in top_players), default=0)
+    for item in top_players:
+        item['progress_percent'] = int((item['stats'].total_score / max_top_score) * 100) if max_top_score > 0 else 5
+    
+    # Umumiy statistika
+    total_stats = {
+        'total_users': User.objects.count(),
+        'total_rooms': Room.objects.filter(is_active=True).count(),
+        'total_puzzles': Puzzle.objects.count(),
+        'total_completed': UserProgress.objects.filter(is_completed=True).count(),
+    }
+    
+    # Xonalar statistikasi
+    rooms = Room.objects.filter(is_active=True).order_by('order')
+    room_stats = []
+    for room in rooms:
+        completed_progress = UserProgress.objects.filter(
+            room=room,
+            is_completed=True
+        )
+        total_puzzles = room.puzzles.count()
+        room_stats.append({
+            'room': room,
+            'completed': completed_progress.count(),
+            'total': total_puzzles,
+            'score': completed_progress.aggregate(total=Sum('score'))['total'] or 0,
+            'time': completed_progress.aggregate(total=Sum('time_taken'))['total'] or 0,
+            'progress_percent': int((completed_progress.count() / total_puzzles) * 100) if total_puzzles > 0 else 0,
+        })
+    
+    # So'nggi faoliyat
+    recent_activities = UserProgress.objects.filter(
+        is_completed=True
+    ).select_related('user', 'puzzle', 'room').order_by('-completed_at')[:10]
+
+    def build_line_series(items, width=320, height=130, padding=22):
+        raw_max = max((item['count'] for item in items), default=0) or 1
+        nice_max = max(400, int(math.ceil(raw_max / 100.0) * 100))
+        step = (width - padding * 2) / (len(items) - 1) if len(items) > 1 else 0
+        points = []
+        for index, item in enumerate(items):
+            x = padding + (index * step)
+            y = (height - padding) - ((item['count'] / nice_max) * (height - padding * 2))
+            points.append({'x': round(x, 1), 'y': round(y, 1), 'label': item['label']})
+        points_str = " ".join([f"{p['x']},{p['y']}" for p in points])
+        baseline_y = height - padding
+        area_points = [f"{points[0]['x']},{baseline_y}"] + points_str.split() + [f"{points[-1]['x']},{baseline_y}"]
+        area_points_str = " ".join(area_points)
+        tick_values = [
+            int(nice_max * 0.33),
+            int(nice_max * 0.66),
+            nice_max,
+        ]
+        ticks = []
+        for value in tick_values:
+            y = (height - padding) - ((value / nice_max) * (height - padding * 2))
+            ticks.append({'value': value, 'y': round(y, 1)})
+        return {
+            'points': points,
+            'points_str': points_str,
+            'area_points_str': area_points_str,
+            'ticks': ticks,
+        }
+
+    def build_bar_series(items, width=320, height=130, padding=24):
+        raw_max = max((item['count'] for item in items), default=0) or 1
+        nice_max = max(60, int(math.ceil(raw_max / 10.0) * 10))
+        inner_width = width - padding * 2
+        count = len(items)
+        gap = inner_width / count
+        bar_width = min(10, gap * 0.4)
+        bars = []
+        for index, item in enumerate(items):
+            x = padding + (index * gap) + (gap - bar_width) / 2
+            bar_height = ((item['count'] / nice_max) * (height - padding * 2))
+            y = (height - padding) - bar_height
+            bars.append({
+                'x': round(x, 1),
+                'y': round(y, 1),
+                'height': round(bar_height, 1),
+                'label': item['label'],
+                'count': item['count'],
+            })
+        ticks = []
+        for value in [nice_max, int(nice_max * 2 / 3), int(nice_max / 3), 0]:
+            y = (height - padding) - ((value / nice_max) * (height - padding * 2))
+            ticks.append({'value': value, 'y': round(y, 1)})
+        return {
+            'bars': bars,
+            'ticks': ticks,
+        }
+
+    # Haftalik faoliyat (so'nggi 7 kun)
+    today = timezone.localdate()
+    weekly_days = [today - timedelta(days=offset) for offset in range(6, -1, -1)]
+    weekly_counts = []
+    
+    # Tilga qarab kun nomlarini olish
+    lang = translation.get_language() or 'uz'
+    days_map = {
+        'uz': ['Du', 'Se', 'Ch', 'Pa', 'Ju', 'Sh', 'Ya'],
+        'en': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        'ja': ['月', '火', '水', '木', '金', '土', '日']
+    }
+    active_days = days_map.get(lang, days_map['uz'])
+
+    for day in weekly_days:
+        count = UserProgress.objects.filter(
+            is_completed=True,
+            completed_at__date=day
+        ).count()
+        label = active_days[day.weekday()]
+        weekly_counts.append({'label': label, 'count': count})
+    weekly_bars = build_bar_series(weekly_counts)
+
+    # Oylik statistika (so'nggi 7 hafta)
+    weekly_ranges = []
+    for offset in range(6, -1, -1):
+        start = today - timedelta(weeks=offset)
+        end = start + timedelta(days=7)
+        weekly_ranges.append((start, end))
+    monthly_counts = []
+    for start, end in weekly_ranges:
+        count = UserProgress.objects.filter(
+            is_completed=True,
+            completed_at__date__gte=start,
+            completed_at__date__lt=end
+        ).count()
+        # Haftaning boshlanish sanasi (masalan: 01.01)
+        label = start.strftime('%d.%m')
+        monthly_counts.append({'label': label, 'count': count})
+    monthly_bars = build_bar_series(monthly_counts)
+
+    # Xonalar bo'yicha yechimlar (top 7)
+    room_completion_counts = []
+    for room in rooms[:7]:
+        count = UserProgress.objects.filter(
+            room=room,
+            is_completed=True
+        ).count()
+        room_completion_counts.append({'label': f"{room.order}", 'count': count})
+    room_bars = build_bar_series(room_completion_counts)
+    
+    context = {
+        'user_stats': user_stats,
+        'top_players': top_players,
+        'total_stats': total_stats,
+        'room_stats': room_stats,
+        'recent_activities': recent_activities,
+        'weekly_bars': weekly_bars,
+        'monthly_bars': monthly_bars,
+        'room_bars': room_bars,
+        'weekly_total': sum(item['count'] for item in weekly_counts),
+        'monthly_total': sum(item['count'] for item in monthly_counts),
+        'room_total': sum(item['count'] for item in room_completion_counts),
+    }
+    return render(request, 'game/dashboard.html', context)
 
 
 @login_required

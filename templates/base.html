@@ -593,7 +593,6 @@
             <div class="navbar-links">
                 {% if user.is_authenticated %}
                     <a href="{% url 'home' %}">🏠 <span data-translate="home">Bosh sahifa</span></a>
-                    <a href="{% url 'statistics' %}">📊 <span data-translate="statistics">Statistika</span></a>
                     <div class="user-info">
                         <span class="score-badge">⭐ {{ user.statistics.total_score|default:0 }} <span data-translate="points">ball</span></span>
                         
@@ -613,6 +612,10 @@
                                 
                                 <div class="dropdown-section">
                                     <div class="dropdown-section-title" data-translate="appearance">Ko'rinish</div>
+                                    <a href="{% url 'dashboard' %}" class="dropdown-item" style="text-decoration: none; color: inherit;">
+                                        <span class="icon">📊</span>
+                                        <span data-translate="dashboard">Dashboard</span>
+                                    </a>
                                     <div class="theme-toggle">
                                         <div class="theme-toggle-label">
                                             <span class="icon">🌙</span>
@@ -674,6 +677,7 @@
             uz: {
                 home: "Bosh sahifa",
                 statistics: "Statistika",
+                dashboard: "Dashboard",
                 points: "ball",
                 appearance: "Ko'rinish",
                 dark_mode: "Qorong'i rejim",
@@ -732,11 +736,36 @@
                 no_statistics: "Hozircha statistika mavjud emas.",
                 recent_completed: "Oxirgi tugallangan jumboqlar",
                 leaderboard: "Leaderboard",
-                no_leaderboard: "Hozircha leaderboard yo'q."
+                no_leaderboard: "Hozircha leaderboard yo'q.",
+                players: "O'yinchilar",
+                weekly_activity: "Haftalik Faoliyat",
+                monthly_statistics: "Oylik Statistika",
+                completed_tasks: "Tugallangan Vazifalar",
+                top_players: "Top O'yinchilar",
+                recent_activity: "So'nggi Faoliyat",
+                active_rooms: "Faol xonalar",
+                last_7_days: "So'nggi 7 kun",
+                last_7_weeks: "So'nggi 7 hafta",
+                by_rooms: "Xonalar bo'yicha",
+                total_solutions: "Jami yechimlar",
+                active_players: "faol o'yinchi",
+                no_activity: "Faoliyat yo'q",
+                no_data: "Hozircha ma'lumot yo'q",
+                this_month: "bu oy",
+                yesterday: "kecha",
+                updated: "Yangilandi",
+                player_col: "O'YINCHI",
+                points_col: "BALLAR",
+                puzzles_col: "JUMBOQLAR",
+                progress_col: "PROGRESS",
+                unit_ta: "ta",
+                unit_s: "s",
+                increase: "o'sish"
             },
             en: {
                 home: "Home",
                 statistics: "Statistics",
+                dashboard: "Dashboard",
                 points: "points",
                 appearance: "Appearance",
                 dark_mode: "Dark mode",
@@ -795,11 +824,36 @@
                 no_statistics: "No statistics available yet.",
                 recent_completed: "Recently Completed Puzzles",
                 leaderboard: "Leaderboard",
-                no_leaderboard: "No leaderboard yet."
+                no_leaderboard: "No leaderboard yet.",
+                players: "Players",
+                weekly_activity: "Weekly Activity",
+                monthly_statistics: "Monthly Statistics",
+                completed_tasks: "Completed Tasks",
+                top_players: "Top Players",
+                recent_activity: "Recent Activity",
+                active_rooms: "Active rooms",
+                last_7_days: "Last 7 days",
+                last_7_weeks: "Last 7 weeks",
+                by_rooms: "By rooms",
+                total_solutions: "Total solutions",
+                active_players: "active players",
+                no_activity: "No activity",
+                no_data: "No data available yet",
+                this_month: "this month",
+                yesterday: "yesterday",
+                updated: "Updated",
+                player_col: "PLAYER",
+                points_col: "POINTS",
+                puzzles_col: "PUZZLES",
+                progress_col: "PROGRESS",
+                unit_ta: "",
+                unit_s: "s",
+                increase: "increase"
             },
             ja: {
                 home: "ホーム",
                 statistics: "統計",
+                dashboard: "ダッシュボード",
                 points: "ポイント",
                 appearance: "外観",
                 dark_mode: "ダークモード",
@@ -858,7 +912,31 @@
                 no_statistics: "まだ統計がありません。",
                 recent_completed: "最近完了したパズル",
                 leaderboard: "ランキング",
-                no_leaderboard: "まだランキングがありません。"
+                no_leaderboard: "まだランキングがありません。",
+                players: "プレイヤー",
+                weekly_activity: "週次活動",
+                monthly_statistics: "月次統計",
+                completed_tasks: "完了したタスク",
+                top_players: "トッププレイヤー",
+                recent_activity: "最近の活動",
+                active_rooms: "アクティブな部屋",
+                last_7_days: "過去7日間",
+                last_7_weeks: "過去7週間",
+                by_rooms: "部屋別",
+                total_solutions: "合計解決数",
+                active_players: "アクティブなプレイヤー",
+                no_activity: "活動なし",
+                no_data: "まだデータがありません",
+                this_month: "今月",
+                yesterday: "昨日",
+                updated: "更新済み",
+                player_col: "プレイヤー",
+                points_col: "ポイント",
+                puzzles_col: "パズル",
+                progress_col: "進捗",
+                unit_ta: "",
+                unit_s: "秒",
+                increase: "増加"
             }
         };
         
