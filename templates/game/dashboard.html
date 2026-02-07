@@ -392,6 +392,71 @@
             padding: 20px;
         }
     }
+
+    /* Dark mode support */
+    [data-theme="dark"] .dashboard-container {
+        background: #151826;
+    }
+
+    [data-theme="dark"] .dashboard-title,
+    [data-theme="dark"] .card-title,
+    [data-theme="dark"] .stat-value,
+    [data-theme="dark"] .activity-title-new {
+        color: #f0f0f0;
+    }
+
+    [data-theme="dark"] .dashboard-subtitle,
+    [data-theme="dark"] .stat-label,
+    [data-theme="dark"] .stat-change.neutral,
+    [data-theme="dark"] .activity-time-new,
+    [data-theme="dark"] th,
+    [data-theme="dark"] td {
+        color: #b6bcc8;
+    }
+
+    [data-theme="dark"] .stat-card,
+    [data-theme="dark"] .table-card {
+        background: #1f2235;
+        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
+    }
+
+    [data-theme="dark"] .stat-change {
+        border-top-color: #2c324a;
+    }
+
+    [data-theme="dark"] .chart-card {
+        box-shadow: 0 16px 28px rgba(0, 0, 0, 0.35);
+    }
+
+    [data-theme="dark"] .progress-bar-container {
+        background: #2c324a;
+    }
+
+    [data-theme="dark"] tr td {
+        border-bottom-color: #2c324a;
+    }
+
+    [data-theme="dark"] .activity-icon-new.green-bg {
+        background: rgba(46, 204, 113, 0.2);
+        color: #9be7b5;
+    }
+
+    [data-theme="dark"] .activity-icon-new.red-bg {
+        background: rgba(231, 76, 60, 0.2);
+        color: #ffb3aa;
+    }
+
+    [data-theme="dark"] .room-stat-card {
+        background: #262a3f !important;
+        border: 1px solid #2c324a;
+        color: #f0f0f0;
+    }
+
+    [data-theme="dark"] .room-stat-card p,
+    [data-theme="dark"] .room-stat-card span,
+    [data-theme="dark"] .room-stat-card small {
+        color: #b6bcc8;
+    }
 </style>
 
 <div class="dashboard-container">
@@ -592,7 +657,7 @@
 
             <div style="display: grid; gap: 15px;">
                 {% for room_stat in room_stats %}
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 12px;">
+                    <div class="room-stat-card" style="background: #f8f9fa; padding: 20px; border-radius: 12px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                             <h4 style="color: #667eea;">{{ room_stat.room.order }}. {{ room_stat.room.title }}</h4>
                             <span style="background: #667eea; color: white; padding: 5px 12px; border-radius: 15px;">

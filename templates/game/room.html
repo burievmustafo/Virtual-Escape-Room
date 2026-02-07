@@ -2,6 +2,35 @@
 
 {% block title %}{{ room.title }} - Jumboq O'yini{% endblock %}
 
+{% block extra_css %}
+<style>
+    .puzzle-item {
+        padding: 20px;
+        background: #fff;
+    }
+
+    .puzzle-item.is-completed {
+        background: #d4edda;
+    }
+
+    [data-theme="dark"] .puzzle-item {
+        background: #1f2235;
+        border: 1px solid #2c324a;
+    }
+
+    [data-theme="dark"] .puzzle-item.is-completed {
+        background: #1f3a2b;
+        border-color: #2c5a3d;
+    }
+
+    [data-theme="dark"] .puzzle-item p,
+    [data-theme="dark"] .puzzle-item span,
+    [data-theme="dark"] .puzzle-item small {
+        color: #b6bcc8;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="card">
     <a href="{% url 'home' %}" class="btn btn-secondary" style="margin-bottom: 20px;">← <span data-translate="back_home">Bosh sahifaga</span></a>
@@ -17,7 +46,7 @@
     
     <div style="display: grid; gap: 15px;">
         {% for puzzle_data in puzzles %}
-            <div class="card" style="padding: 20px; background: {% if puzzle_data.progress.is_completed %}#d4edda{% else %}#fff{% endif %};">
+            <div class="card puzzle-item {% if puzzle_data.progress.is_completed %}is-completed{% endif %}">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div style="flex: 1;">
                         <h4 style="color: #667eea; margin-bottom: 8px;">
@@ -31,7 +60,7 @@
                         </p>
                         <div style="display: flex; gap: 20px; font-size: 14px; color: #666;">
                             <span>📊 {{ puzzle_data.puzzle.points }} <span data-translate="points">ball</span></span>
-                            <span>🎯 {{ puzzle_data.puzzle.get_puzzle_type_display }}</span>
+                            <span>🎯 <span data-translate="puzzle_type_{{ puzzle_data.puzzle.puzzle_type }}">{{ puzzle_data.puzzle.get_puzzle_type_display }}</span></span>
                             {% if puzzle_data.progress.is_completed %}
                                 <span>⭐ {{ puzzle_data.progress.score }} <span data-translate="points">ball</span></span>
                                 <span>⏱️ {{ puzzle_data.progress.time_taken }}s</span>

@@ -64,13 +64,15 @@
             align-items: center;
         }
         
-        .navbar h1 {
+        .navbar-logo {
             color: var(--accent);
             font-size: 22px;
             letter-spacing: 0.2px;
+            text-decoration: none;
+            font-weight: 700;
         }
         
-        [data-theme="dark"] .navbar h1 {
+        [data-theme="dark"] .navbar-logo {
             color: #a0b4ff;
         }
         
@@ -589,10 +591,10 @@
 <body>
     <div class="container">
         <nav class="navbar">
-            <h1>🧩 Jumboq O'yini</h1>
+            <a href="{% url 'dashboard' %}" class="navbar-logo">🧩 Jumboq O'yini</a>
             <div class="navbar-links">
                 {% if user.is_authenticated %}
-                    <a href="{% url 'home' %}">🏠 <span data-translate="home">Bosh sahifa</span></a>
+                    <a href="{% url 'home' %}">👤 <span data-translate="my_page">My Page</span></a>
                     <div class="user-info">
                         <span class="score-badge">⭐ {{ user.statistics.total_score|default:0 }} <span data-translate="points">ball</span></span>
                         
@@ -611,11 +613,15 @@
                                 </div>
                                 
                                 <div class="dropdown-section">
-                                    <div class="dropdown-section-title" data-translate="appearance">Ko'rinish</div>
-                                    <a href="{% url 'dashboard' %}" class="dropdown-item" style="text-decoration: none; color: inherit;">
-                                        <span class="icon">📊</span>
-                                        <span data-translate="dashboard">Dashboard</span>
+                                    <div class="dropdown-section-title" data-translate="my_page">My Page</div>
+                                    <a href="{% url 'home' %}" class="dropdown-item" style="text-decoration: none; color: inherit;">
+                                        <span class="icon">👤</span>
+                                        <span data-translate="my_page">My Page</span>
                                     </a>
+                                </div>
+
+                                <div class="dropdown-section">
+                                    <div class="dropdown-section-title" data-translate="appearance">Ko'rinish</div>
                                     <div class="theme-toggle">
                                         <div class="theme-toggle-label">
                                             <span class="icon">🌙</span>
@@ -635,9 +641,9 @@
                                 <div class="dropdown-section">
                                     <div class="dropdown-section-title" data-translate="language">Til</div>
                                     <div class="language-options">
-                                        <button class="lang-btn active" data-lang="uz" onclick="setLanguage('uz')">UZ</button>
-                                        <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">EN</button>
-                                        <button class="lang-btn" data-lang="ja" onclick="setLanguage('ja')">JP</button>
+                                        <button class="lang-btn active" data-lang="uz" onclick="setLanguage('uz')">🇺🇿</button>
+                                        <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧</button>
+                                        <button class="lang-btn" data-lang="ja" onclick="setLanguage('ja')">🇯🇵</button>
                                     </div>
                                 </div>
                                 
@@ -676,6 +682,9 @@
         const translations = {
             uz: {
                 home: "Bosh sahifa",
+                dashboard: "Dashboard",
+                my_page: "My Page",
+                profile: "Profil",
                 statistics: "Statistika",
                 dashboard: "Dashboard",
                 points: "ball",
@@ -703,6 +712,8 @@
                 daily_challenge: "Kunlik jumboq",
                 play_now: "Hozir o'ynash",
                 completed: "Tugallangan",
+                email: "Email",
+                joined: "Qo'shilgan sana",
                 // Room page
                 puzzles: "Jumboqlar",
                 back_home: "Bosh sahifaga",
@@ -729,6 +740,11 @@
                 show_hint: "Maslahatni ko'rsatish",
                 tokens_left: "Tokenlar",
                 mission: "Vazifa",
+                puzzle_type_math: "Matematika",
+                puzzle_type_logic: "Mantiqiy",
+                puzzle_type_word: "So'z",
+                puzzle_type_memory: "Xotira",
+                puzzle_type_pattern: "Naqsh",
                 // Statistics page
                 current_room: "Joriy xona:",
                 all_rooms_completed: "Barcha xonalar tugallandi!",
@@ -760,10 +776,15 @@
                 progress_col: "PROGRESS",
                 unit_ta: "ta",
                 unit_s: "s",
-                increase: "o'sish"
+                increase: "o'sish",
+                your_rank: "Sizning o'rningiz",
+                you: "siz"
             },
             en: {
                 home: "Home",
+                dashboard: "Dashboard",
+                my_page: "My Page",
+                profile: "Profile",
                 statistics: "Statistics",
                 dashboard: "Dashboard",
                 points: "points",
@@ -791,6 +812,8 @@
                 daily_challenge: "Daily Challenge",
                 play_now: "Play Now",
                 completed: "Completed",
+                email: "Email",
+                joined: "Joined",
                 // Room page
                 puzzles: "Puzzles",
                 back_home: "Back to Home",
@@ -817,6 +840,11 @@
                 show_hint: "Show Hint",
                 tokens_left: "Tokens",
                 mission: "Mission",
+                puzzle_type_math: "Math",
+                puzzle_type_logic: "Logic",
+                puzzle_type_word: "Word",
+                puzzle_type_memory: "Memory",
+                puzzle_type_pattern: "Pattern",
                 // Statistics page
                 current_room: "Current Room:",
                 all_rooms_completed: "All rooms completed!",
@@ -848,10 +876,15 @@
                 progress_col: "PROGRESS",
                 unit_ta: "",
                 unit_s: "s",
-                increase: "increase"
+                increase: "increase",
+                your_rank: "Your rank",
+                you: "you"
             },
             ja: {
                 home: "ホーム",
+                dashboard: "ダッシュボード",
+                my_page: "マイページ",
+                profile: "プロフィール",
                 statistics: "統計",
                 dashboard: "ダッシュボード",
                 points: "ポイント",
@@ -879,6 +912,8 @@
                 daily_challenge: "今日のパズル",
                 play_now: "今すぐプレイ",
                 completed: "完了",
+                email: "メール",
+                joined: "参加日",
                 // Room page
                 puzzles: "パズル",
                 back_home: "ホームへ戻る",
@@ -905,6 +940,11 @@
                 show_hint: "ヒントを表示",
                 tokens_left: "トークン",
                 mission: "ミッション",
+                puzzle_type_math: "数学",
+                puzzle_type_logic: "論理",
+                puzzle_type_word: "言葉",
+                puzzle_type_memory: "記憶",
+                puzzle_type_pattern: "パターン",
                 // Statistics page
                 current_room: "現在の部屋：",
                 all_rooms_completed: "すべての部屋が完了しました！",
@@ -936,7 +976,9 @@
                 progress_col: "進捗",
                 unit_ta: "",
                 unit_s: "秒",
-                increase: "増加"
+                increase: "増加",
+                your_rank: "あなたの順位",
+                you: "あなた"
             }
         };
         

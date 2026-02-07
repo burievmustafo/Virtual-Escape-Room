@@ -78,14 +78,17 @@ class UserProgress(models.Model):
         self.is_completed = True
         self.completed_at = timezone.now()
         self.time_taken = time_taken
-        self.attempts += 1
         # Vaqtga qarab ball hisoblash: qancha tez bo'lsa, shuncha ko'p
         base_score = self.puzzle.points
         max_time = 180  # 3 daqiqa ichida maksimal ball
         min_multiplier = 0.2  # Eng past ball foizi
         time_factor = 1 - (time_taken / max_time)
         multiplier = max(min_multiplier, min(1, time_factor))
-        self.score = max(1, int(round(base_score * multiplier)))
+        base_score = max(1, int(round(base_score * multiplier)))
+        # Har bir noto'g'ri urinish uchun ballni kamaytirish
+        wrong_attempts = max(self.attempts - 1, 0)
+        penalty_multiplier = max(0.2, 1 - (0.1 * wrong_attempts))
+        self.score = max(1, int(round(base_score * penalty_multiplier)))
         self.save()
 
 

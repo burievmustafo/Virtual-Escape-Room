@@ -8,6 +8,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils import timezone, translation
 from django.db.models import Sum, Q, Count, Avg
+import re
 from django.contrib.auth.models import User
 from datetime import timedelta
 import math
@@ -82,6 +83,22 @@ def get_daily_puzzle(user):
     puzzle = puzzles[today_index]
     completed = UserProgress.objects.filter(user=user, puzzle=puzzle, is_completed=True).exists()
     return puzzle, completed
+
+
+def normalize_answer(value):
+    return re.sub(r"\s+", " ", value.strip().lower())
+
+
+def get_correct_answers(puzzle, lang_code):
+    lang = (lang_code or 'uz').split('-')[0]
+    localized_field = f'correct_answer_{lang}'
+    localized_value = ''
+    if hasattr(puzzle, localized_field):
+        localized_value = getattr(puzzle, localized_field) or ''
+
+    source_value = localized_value if localized_value.strip() else (puzzle.correct_answer or '')
+    parts = re.split(r"[,\n;|]+", source_value)
+    return {normalize_answer(p) for p in parts if p.strip()}
 
 
 def register_view(request):
@@ -286,8 +303,9 @@ def submit_answer(request, puzzle_id):
         defaults={'room': puzzle.room, 'started_at': timezone.now()}
     )
     
-    correct_answer = puzzle.correct_answer.strip().lower()
-    is_correct = user_answer == correct_answer
+    lang_code = translation.get_language() or 'uz'
+    correct_answers = get_correct_answers(puzzle, lang_code)
+    is_correct = normalize_answer(user_answer) in correct_answers
     
     if not progress.is_completed:
         progress.attempts += 1
@@ -352,7 +370,6 @@ def submit_answer(request, puzzle_id):
         })
 
 
-@login_required
 @login_required
 def dashboard_view(request):
     """Dashboard - barcha o'yinchilar statistikasi"""
@@ -530,6 +547,25 @@ def dashboard_view(request):
         'room_total': sum(item['count'] for item in room_completion_counts),
     }
     return render(request, 'game/dashboard.html', context)
+
+
+@login_required
+def profile_view(request):
+    """Foydalanuvchi profili"""
+    stats, _ = UserStatistics.objects.get_or_create(user=request.user)
+    stats.update_statistics()
+
+    recent_progress = UserProgress.objects.filter(
+        user=request.user,
+        is_completed=True
+    ).select_related('puzzle', 'room').order_by('-completed_at')[:5]
+
+    context = {
+        'stats': stats,
+        'recent_progress': recent_progress,
+        'badges': get_user_badges(request.user),
+    }
+    return render(request, 'game/profile.html', context)
 
 
 @login_required

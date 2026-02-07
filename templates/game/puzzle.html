@@ -32,6 +32,19 @@
         color: #667eea;
         margin-bottom: 15px;
     }
+
+    [data-theme="dark"] .puzzle-question {
+        background: #1f2235;
+        border-left-color: #8fa2ff;
+    }
+
+    [data-theme="dark"] .puzzle-question h3 {
+        color: #8fa2ff;
+    }
+
+    [data-theme="dark"] .puzzle-question p {
+        color: #b6bcc8;
+    }
     
     .answer-form {
         margin-top: 30px;
@@ -94,7 +107,7 @@
         
         <div style="display: flex; gap: 15px; margin-bottom: 20px; font-size: 14px; color: #666;">
             <span>📂 {{ puzzle.room.title }}</span>
-            <span>🎯 {{ puzzle.get_puzzle_type_display }}</span>
+            <span>🎯 <span data-translate="puzzle_type_{{ puzzle.puzzle_type }}">{{ puzzle.get_puzzle_type_display }}</span></span>
             {% if progress.attempts > 0 %}
                 <span>🔄 {{ progress.attempts }} <span data-translate="attempts">urinish</span></span>
             {% endif %}
@@ -336,24 +349,50 @@
                     `;
                     answerInput.disabled = true;
                     
-                    setTimeout(() => {
-                        if (data.room_completed) {
-                            if (data.next_room) {
-                                if (confirm(`Xona tugallandi! Keyingi xonaga o'tasizmi?\n\n${data.next_room.title}`)) {
-                                    window.location.href = '/room/' + data.next_room.id + '/';
-                                } else {
-                                    window.location.href = '/';
-                                }
-                            } else {
-                                alert('Barcha xonalar tugallandi! Tabriklaymiz! 🎉');
-                                window.location.href = '/';
-                            }
-                        } else if (data.next_puzzle_id) {
-                            window.location.href = '/puzzle/' + data.next_puzzle_id + '/';
+                    let nextActionHtml = '';
+                    if (data.room_completed) {
+                        if (data.next_room) {
+                            nextActionHtml = `
+                                <div style="margin-top: 12px;">
+                                    <button class="btn" onclick="window.location.href='/room/${data.next_room.id}/'">
+                                        Keyingi xonaga o'tish
+                                    </button>
+                                </div>
+                            `;
                         } else {
-                            window.location.href = '/room/{{ puzzle.room.id }}/';
+                            nextActionHtml = `
+                                <div style="margin-top: 12px;">
+                                    <button class="btn" onclick="window.location.href='/'">
+                                        Bosh sahifaga qaytish
+                                    </button>
+                                </div>
+                            `;
                         }
-                    }, 2000);
+                    } else if (data.next_puzzle_id) {
+                        nextActionHtml = `
+                            <div style="margin-top: 12px;">
+                                <button class="btn" onclick="window.location.href='/puzzle/${data.next_puzzle_id}/'">
+                                    Keyingi jumboqqa o'tish
+                                </button>
+                            </div>
+                        `;
+                    } else {
+                        nextActionHtml = `
+                            <div style="margin-top: 12px;">
+                                <button class="btn" onclick="window.location.href='/room/{{ puzzle.room.id }}/'">
+                                    Xonaga qaytish
+                                </button>
+                            </div>
+                        `;
+                    }
+
+                    resultDiv.innerHTML = `
+                        <div class="result-message success">
+                            ✅ ${data.message}<br>
+                            <small>Ball: ${data.score} | Vaqt: ${elapsedSeconds}s</small>
+                            ${nextActionHtml}
+                        </div>
+                    `;
                 } else {
                     if (window.playSound) {
                         window.playSound('error');

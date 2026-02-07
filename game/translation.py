@@ -9,7 +9,7 @@ class RoomTranslationOptions(TranslationOptions):
 
 class PuzzleTranslationOptions(TranslationOptions):
     """Jumboq modeli uchun tarjima maydonlari"""
-    fields = ('title', 'description', 'question', 'hint')
+    fields = ('title', 'description', 'question', 'hint', 'correct_answer')
 
 
 translator.register(Room, RoomTranslationOptions)

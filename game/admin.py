@@ -39,10 +39,10 @@ class PuzzleAdmin(TabbedTranslationAdmin):
     
     fieldsets = (
         ('Asosiy ma\'lumotlar', {
-            'fields': ('room', 'puzzle_type', 'order', 'points', 'correct_answer')
+            'fields': ('room', 'puzzle_type', 'order', 'points')
         }),
         ('Tarjimalar', {
-            'fields': ('title', 'description', 'question', 'hint'),
+            'fields': ('title', 'description', 'question', 'hint', 'correct_answer'),
             'description': '🌍 Har bir til uchun tab ustiga bosing (O\'zbek | English | 日本語)'
         }),
     )

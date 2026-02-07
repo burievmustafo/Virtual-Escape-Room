@@ -268,12 +268,12 @@
                 <div>
                     <div class="leaderboard-name">
                         {{ entry.user.username }}
-                        {% if entry.user_id == user.id %} (siz){% endif %}
+                        {% if entry.user_id == user.id %} (<span data-translate="you">siz</span>){% endif %}
                     </div>
                     <div class="leaderboard-meta">
-                        <span>🏁 {{ entry.rooms_completed }} xona</span>
-                        <span>🧩 {{ entry.puzzles_completed }} jumboq</span>
-                        <span>⏱️ {{ entry.total_time }}s</span>
+                        <span>🏁 {{ entry.rooms_completed }} <span data-translate="rooms">Xonalar</span></span>
+                        <span>🧩 {{ entry.puzzles_completed }} <span data-translate="puzzles">Jumboqlar</span></span>
+                        <span>⏱️ {{ entry.total_time }}<span data-translate="unit_s">s</span></span>
                     </div>
                 </div>
                 <div class="leaderboard-score">
@@ -289,7 +289,7 @@
     </div>
 
     <div class="leaderboard-highlight">
-        Sizning o'rningiz: <strong>#{{ current_rank }}</strong>
+        <span data-translate="your_rank">Sizning o'rningiz</span>: <strong>#{{ current_rank }}</strong>
     </div>
 </div>
 <script>
