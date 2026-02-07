@@ -459,6 +459,15 @@ def dashboard_view(request):
         nice_max = max(60, int(math.ceil(raw_max / 10.0) * 10))
         inner_width = width - padding * 2
         count = len(items)
+        if count == 0:
+            ticks = []
+            for value in [nice_max, int(nice_max * 2 / 3), int(nice_max / 3), 0]:
+                y = (height - padding) - ((value / nice_max) * (height - padding * 2))
+                ticks.append({'value': value, 'y': round(y, 1)})
+            return {
+                'bars': [],
+                'ticks': ticks,
+            }
         gap = inner_width / count
         bar_width = min(10, gap * 0.4)
         bars = []
