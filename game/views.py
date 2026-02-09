@@ -115,7 +115,7 @@ def register_view(request):
             username = form.cleaned_data.get('username')
             messages.success(request, f'Hisob yaratildi: {username}')
             login(request, user)
-            return redirect('home')
+            return redirect('dashboard')
     else:
         form = UserCreationForm()
     return render(request, 'game/register.html', {'form': form})
