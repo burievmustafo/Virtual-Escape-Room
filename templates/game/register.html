@@ -39,27 +39,85 @@
             margin-bottom: 35px;
         }
 
-        .lang-switcher {
+        .lang-dropdown {
             display: flex;
-            justify-content: center;
+            justify-content: flex-end;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .lang-toggle {
+            display: inline-flex;
+            align-items: center;
             gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .lang-btn {
-            padding: 6px 10px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            background: #f8f9fa;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-
-        .lang-btn.active {
-            background: #667eea;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.2);
             color: white;
-            border-color: #667eea;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(6px);
+        }
+
+        .lang-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .lang-icon {
+            font-size: 16px;
+        }
+
+        .lang-caret {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .lang-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+            min-width: 170px;
+            padding: 6px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-6px);
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        .lang-dropdown.active .lang-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .lang-item {
+            width: 100%;
+            border: none;
+            background: transparent;
+            padding: 10px 12px;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .lang-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .lang-item.active {
+            background: rgba(102, 126, 234, 0.15);
+            font-weight: 600;
         }
         
         .register-header .logo {
@@ -172,13 +230,21 @@
 </head>
 <body>
     <div class="register-container">
+        <div class="lang-dropdown" id="langDropdown">
+            <button class="lang-toggle" type="button" onclick="toggleLangMenu()">
+                <span class="lang-icon">🌐</span>
+                <span class="lang-label" id="currentLangLabel">O'zbek</span>
+                <span class="lang-caret">▾</span>
+            </button>
+            <div class="lang-menu">
+                <button class="lang-item" data-lang="uz" onclick="setLanguage('uz')">🇺🇿 O'zbek</button>
+                <button class="lang-item" data-lang="en" onclick="setLanguage('en')">🇬🇧 English</button>
+                <button class="lang-item" data-lang="ja" onclick="setLanguage('ja')">🇯🇵 日本語</button>
+            </div>
+        </div>
+
         <div class="register-card">
             <div class="register-header">
-                <div class="lang-switcher">
-                    <button class="lang-btn active" data-lang="uz" onclick="setLanguage('uz')">🇺🇿</button>
-                    <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧</button>
-                    <button class="lang-btn" data-lang="ja" onclick="setLanguage('ja')">🇯🇵</button>
-                </div>
                 <div class="logo">🧩</div>
                 <h1 data-translate="register_title">Ro'yxatdan o'tish</h1>
                 <p data-translate="register_subtitle">Yangi hisob yarating</p>
@@ -272,7 +338,13 @@
         function setLanguage(lang, save = true) {
             const elements = document.querySelectorAll('[data-translate]');
             const placeholders = document.querySelectorAll('[data-placeholder-translate]');
-            const langBtns = document.querySelectorAll('.lang-btn');
+            const langItems = document.querySelectorAll('.lang-item');
+            const currentLabel = document.getElementById('currentLangLabel');
+            const labels = {
+                uz: "O'zbek",
+                en: "English",
+                ja: "日本語"
+            };
 
             elements.forEach(el => {
                 const key = el.getAttribute('data-translate');
@@ -288,12 +360,16 @@
                 }
             });
 
-            langBtns.forEach(btn => {
+            langItems.forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.getAttribute('data-lang') === lang) {
                     btn.classList.add('active');
                 }
             });
+
+            if (currentLabel && labels[lang]) {
+                currentLabel.textContent = labels[lang];
+            }
 
             if (save) {
                 localStorage.setItem('language', lang);
@@ -314,6 +390,17 @@
         document.addEventListener('DOMContentLoaded', function() {
             const savedLang = localStorage.getItem('language') || 'uz';
             setLanguage(savedLang, false);
+        });
+
+        function toggleLangMenu() {
+            document.getElementById('langDropdown').classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('langDropdown');
+            if (dropdown && !dropdown.contains(event.target)) {
+                dropdown.classList.remove('active');
+            }
         });
     </script>
 </body>
