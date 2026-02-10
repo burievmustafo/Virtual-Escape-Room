@@ -601,20 +601,28 @@
                         <!-- Profile Dropdown -->
                         <div class="profile-dropdown" id="profileDropdown">
                             <div class="profile-btn" onclick="toggleDropdown()">
-                                <div class="profile-avatar">{{ user.username|slice:":1"|upper }}</div>
+                                {% if user_profile and user_profile.avatar %}
+                                    <img class="profile-avatar" src="{{ user_profile.avatar.url }}" alt="avatar">
+                                {% else %}
+                                    <div class="profile-avatar">{{ user.username|slice:":1"|upper }}</div>
+                                {% endif %}
                                
                             </div>
                             
                             <div class="dropdown-menu">
                                 <div class="dropdown-header">
-                                    <div class="avatar-large">{{ user.username|slice:":1"|upper }}</div>
+                                    {% if user_profile and user_profile.avatar %}
+                                        <img class="avatar-large" src="{{ user_profile.avatar.url }}" alt="avatar">
+                                    {% else %}
+                                        <div class="avatar-large">{{ user.username|slice:":1"|upper }}</div>
+                                    {% endif %}
                                     <div class="user-name">{{ user.username }}</div>
                                     <div class="user-email">{{ user.email|default:"O'yinchi" }}</div>
                                 </div>
                                 
                                 <div class="dropdown-section">
                                     <div class="dropdown-section-title" data-translate="my_page">My Page</div>
-                                    <a href="{% url 'home' %}" class="dropdown-item" style="text-decoration: none; color: inherit;">
+                                    <a href="{% url 'my_page' %}" class="dropdown-item" style="text-decoration: none; color: inherit;">
                                         <span class="icon">👤</span>
                                         <span data-translate="my_page">My Page</span>
                                     </a>
@@ -636,6 +644,10 @@
                                         </div>
                                         <div class="toggle-switch" id="soundToggle" onclick="toggleSound()"></div>
                                     </div>
+                                    <a href="{% url 'settings' %}" class="dropdown-item" style="text-decoration: none; color: inherit;">
+                                        <span class="icon">⚙️</span>
+                                        <span data-translate="settings">Settings</span>
+                                    </a>
                                 </div>
                                 
                                 <div class="dropdown-section">
@@ -695,6 +707,19 @@
                 logout: "Chiqish",
                 login: "Kirish",
                 register: "Ro'yxatdan o'tish",
+                settings: "Sozlamalar",
+                player_label: "O'yinchi",
+                user_info: "Foydalanuvchi ma'lumotlari",
+                email: "Email",
+                avatar: "Avatar",
+                upload_avatar: "Rasm yuklash",
+                upload_hint: "JPG/PNG yuklang",
+                remove_avatar: "Rasmni o'chirish",
+                change_password: "Parolni o'zgartirish",
+                current_password: "Joriy parol",
+                new_password: "Yangi parol",
+                confirm_password: "Yangi parol (takror)",
+                save: "Saqlash",
                 // Home page
                 welcome: "Xush kelibsiz",
                 total_score: "Jami ball",
@@ -795,6 +820,19 @@
                 logout: "Logout",
                 login: "Login",
                 register: "Register",
+                settings: "Settings",
+                player_label: "Player",
+                user_info: "User information",
+                email: "Email",
+                avatar: "Avatar",
+                upload_avatar: "Upload avatar",
+                upload_hint: "Upload JPG/PNG",
+                remove_avatar: "Remove avatar",
+                change_password: "Change password",
+                current_password: "Current password",
+                new_password: "New password",
+                confirm_password: "Confirm password",
+                save: "Save",
                 // Home page
                 welcome: "Welcome",
                 total_score: "Total Score",
@@ -895,6 +933,19 @@
                 logout: "ログアウト",
                 login: "ログイン",
                 register: "登録",
+                settings: "設定",
+                player_label: "プレイヤー",
+                user_info: "ユーザー情報",
+                email: "メール",
+                avatar: "アバター",
+                upload_avatar: "画像をアップロード",
+                upload_hint: "JPG/PNG をアップロード",
+                remove_avatar: "画像を削除",
+                change_password: "パスワード変更",
+                current_password: "現在のパスワード",
+                new_password: "新しいパスワード",
+                confirm_password: "新しいパスワード（確認）",
+                save: "保存",
                 // Home page
                 welcome: "ようこそ",
                 total_score: "合計スコア",

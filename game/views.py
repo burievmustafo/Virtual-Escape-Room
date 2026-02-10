@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, update_session_auth_hash
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -14,7 +14,8 @@ from datetime import timedelta
 import math
 import json
 
-from .models import Room, Puzzle, UserProgress, UserStatistics
+from .models import Room, Puzzle, UserProgress, UserStatistics, UserProfile
+from .forms import ProfileUpdateForm, AvatarUpdateForm, CustomPasswordChangeForm
 
 
 def get_user_badges(user):
@@ -559,22 +560,59 @@ def dashboard_view(request):
 
 
 @login_required
-def profile_view(request):
+def my_page_view(request):
     """Foydalanuvchi profili"""
-    stats, _ = UserStatistics.objects.get_or_create(user=request.user)
-    stats.update_statistics()
+    return home_view(request)
 
-    recent_progress = UserProgress.objects.filter(
-        user=request.user,
-        is_completed=True
-    ).select_related('puzzle', 'room').order_by('-completed_at')[:5]
+
+@login_required
+def settings_view(request):
+    """Foydalanuvchi sozlamalari"""
+    stats, _ = UserStatistics.objects.get_or_create(user=request.user)
+    request.user.profile = getattr(request.user, 'profile', None) or UserProfile.objects.create(user=request.user)
+    profile_form = ProfileUpdateForm(instance=request.user)
+    avatar_form = AvatarUpdateForm()
+    password_form = CustomPasswordChangeForm(user=request.user)
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'profile':
+            profile_form = ProfileUpdateForm(request.POST, instance=request.user)
+            if profile_form.is_valid():
+                profile_form.save()
+                messages.success(request, "Profil saqlandi.")
+                return redirect('settings')
+        elif action == 'avatar':
+            avatar_form = AvatarUpdateForm(request.POST, request.FILES)
+            if avatar_form.is_valid():
+                if avatar_form.cleaned_data.get('remove_avatar'):
+                    if request.user.profile.avatar:
+                        request.user.profile.avatar.delete(save=False)
+                    request.user.profile.avatar = None
+                    request.user.profile.save()
+                    messages.success(request, "Rasm o'chirildi.")
+                else:
+                    avatar = avatar_form.cleaned_data.get('avatar')
+                    if avatar:
+                        request.user.profile.avatar = avatar
+                        request.user.profile.save()
+                        messages.success(request, "Rasm yangilandi.")
+                return redirect('settings')
+        elif action == 'password':
+            password_form = CustomPasswordChangeForm(request.user, request.POST)
+            if password_form.is_valid():
+                user = password_form.save()
+                update_session_auth_hash(request, user)
+                messages.success(request, "Parol yangilandi.")
+                return redirect('settings')
 
     context = {
         'stats': stats,
-        'recent_progress': recent_progress,
-        'badges': get_user_badges(request.user),
+        'profile_form': profile_form,
+        'avatar_form': avatar_form,
+        'password_form': password_form,
     }
-    return render(request, 'game/profile.html', context)
+    return render(request, 'game/settings.html', context)
 
 
 @login_required

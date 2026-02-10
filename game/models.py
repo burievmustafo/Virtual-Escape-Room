@@ -159,3 +159,27 @@ class UserStatistics(models.Model):
             self.save(update_fields=['hint_tokens', 'last_hint_refill'])
         return self.hint_tokens
 
+
+class UserProfile(models.Model):
+    """Foydalanuvchi profili (avatar)"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user.username} profile"
+
+
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+
+
+def save_user_profile(sender, instance, **kwargs):
+    if hasattr(instance, 'profile'):
+        instance.profile.save()
+
+
+from django.db.models.signals import post_save
+post_save.connect(create_user_profile, sender=User)
+post_save.connect(save_user_profile, sender=User)
+
